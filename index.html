@@ -582,6 +582,7 @@ function renderTable(){
 
   container.querySelectorAll('.jam-input').forEach(input => {
     input.addEventListener('input', onJamInput);
+    input.addEventListener('keydown', onJamKeydown);
   });
   container.querySelectorAll('.quickfill-input').forEach(input => {
     input.addEventListener('keydown', onQuickFillKeydown);
@@ -639,6 +640,20 @@ function applyQuickFill(inputEl){
 
 function container_querySelectorJam(idx, h){
   return document.querySelector(`.jam-input[data-idx="${idx}"][data-jam="${h}"]`);
+}
+
+function onJamKeydown(e){
+  if(e.key !== 'Enter') return;
+  e.preventDefault();
+  const idx = Number(e.target.dataset.idx);
+  const jam = e.target.dataset.jam;
+  const nextInput = document.querySelector(`.jam-input[data-idx="${idx+1}"][data-jam="${jam}"]`);
+  if(nextInput){
+    nextInput.focus();
+    nextInput.select();
+  }else{
+    e.target.blur(); // sudah baris terakhir, tidak ada lagi di bawahnya
+  }
 }
 
 function onJamInput(e){
