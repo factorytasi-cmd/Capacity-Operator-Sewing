@@ -489,33 +489,6 @@ function onLineOrDateChange(){
     setSaveStatus('Melanjutkan draf tersimpan di browser ini.', '');
   }else{
     setSaveStatus('Data dimuat.', '');
-    fetchProgressFallback(tanggal, line); // cek siapa tahu ada progress tersimpan di sheet (device/browser lain)
-  }
-}
-
-async function fetchProgressFallback(tanggal, line){
-  try{
-    const progress = await apiGet({ action:'getProgress', tanggal, line });
-    if(!progress || Object.keys(progress).length === 0) return;
-    // pastikan user belum pindah line/tanggal selagi request berjalan
-    if(currentLine !== line || currentTanggal !== tanggal) return;
-
-    let changed = false;
-    currentOperators.forEach(op => {
-      if(progress[op.nip]){
-        op.jam = progress[op.nip];
-        changed = true;
-      }
-    });
-    if(changed){
-      persistCurrentToLocal();
-      renderTable();
-      updateAvgEfficiency();
-      setSaveStatus('Melanjutkan progress tersimpan dari sheet.', '');
-    }
-  }catch(e){
-    // gagal ambil fallback bukan masalah kritis, biarkan senyap
-    console.error(e);
   }
 }
 
