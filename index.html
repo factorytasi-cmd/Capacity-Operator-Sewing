@@ -577,60 +577,8 @@ function onJamInput(e){
   document.querySelector(`[data-eff-idx="${idx}"]`).innerHTML = effChip(eff);
 
   persistCurrentToLocal();
-  setSaveStatus('Tersimpan di browser. Menunggu sinkron ke sheet...', '');
+  setSaveStatus('Tersimpan di browser (belum dikirim ke sheet).', '');
   updateAvgEfficiency();
-  scheduleBackgroundSync();
-}
-
-let pendingSnapshot = null;
-
-function buildSyncSnapshot(){
-  return {
-    tanggal: currentTanggal,
-    line: currentLine,
-    rows: currentOperators.map(op => ({
-      nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
-      target: op.target, jam: op.jam
-    }))
-  };
-}
-
-function scheduleBackgroundSync(){
-  clearTimeout(syncTimer);
-  // snapshot diambil SEKARANG (saat user mengetik), bukan saat timer akhirnya jalan -
-  // supaya kalau user keburu ganti Line, sync ini tetap mengirim data Line yang sedang diketik tadi, bukan data Line baru.
-  const snapshot = buildSyncSnapshot();
-  syncTimer = setTimeout(() => backgroundSync(snapshot), 1500);
-}
-
-async function backgroundSync(snapshot){
-  if(!snapshot || !snapshot.tanggal || !snapshot.line || snapshot.rows.length === 0) return;
-
-  if(isSyncing){
-    pendingSnapshot = snapshot; // antre, kirim snapshot TERBARU setelah yang sedang berjalan selesai
-    return;
-  }
-
-  isSyncing = true;
-  const isStillViewingSameLine = () => currentLine === snapshot.line && currentTanggal === snapshot.tanggal;
-  try{
-    await apiPost({ action:'save', tanggal: snapshot.tanggal, rows: snapshot.rows });
-    const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
-    if(isStillViewingSameLine()){
-      setSaveStatus('Tersimpan (lokal) & tersinkron ke sheet pukul ' + now, 'ok');
-    }
-  }catch(err){
-    if(isStillViewingSameLine()){
-      setSaveStatus('Tersimpan lokal, gagal sinkron ke sheet (' + err.message + '). Klik Simpan untuk coba lagi.', 'err');
-    }
-  }finally{
-    isSyncing = false;
-    if(pendingSnapshot){
-      const next = pendingSnapshot;
-      pendingSnapshot = null;
-      backgroundSync(next);
-    }
-  }
 }
 
 function computeRerata(jamObj){
@@ -672,46 +620,46 @@ function setSaveStatus(text, type){
   el.className = 'save-status' + (type ? ' ' + type : '');
 }
 
-// ---------- SAVE ----------
-async function doSave(mode){
+// ---------- SAVE (lokal) & SUBMIT (kirim ke sheet) ----------
+function doSaveLocal(){
+  persistCurrentToLocal();
+  const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
+  setSaveStatus('Tersimpan di browser pukul ' + now + ' (belum dikirim ke sheet).', 'ok');
+}
+
+async function doSubmit(){
   const tanggal = currentTanggal;
   const rows = currentOperators.map(op => ({
     nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
     target: op.target, jam: op.jam
   }));
-  clearTimeout(syncTimer); // batalkan auto-sync yang mungkin sedang dijadwalkan, kirim sekarang juga
 
   const btnSave = document.getElementById('btnSave');
   const btnSubmit = document.getElementById('btnSubmit');
   btnSave.disabled = true; btnSubmit.disabled = true;
-  setSaveStatus(mode === 'submit' ? 'Mengirim submit final...' : 'Menyinkronkan ke sheet...', '');
+  setSaveStatus('Mengirim submit final ke sheet...', '');
 
-  // tunggu kalau ada auto-sync yang sedang berjalan, supaya tidak tabrakan
   while(isSyncing){ await new Promise(r => setTimeout(r, 200)); }
   isSyncing = true;
   try{
-    await apiPost({ action: mode, tanggal, rows });
+    await apiPost({ action:'submit', tanggal, rows });
     const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
-    if(mode === 'submit'){
-      clearLocalDraft(currentTanggal, currentLine);
-      isLocked = true;
-      renderTable();
-      setSaveStatus('Berhasil disubmit final pukul ' + now, 'ok');
-    }else{
-      setSaveStatus('Tersimpan (lokal) & tersinkron ke sheet pukul ' + now, 'ok');
-    }
+    clearLocalDraft(currentTanggal, currentLine);
+    isLocked = true;
+    renderTable();
+    setSaveStatus('Berhasil disubmit final ke sheet pukul ' + now, 'ok');
   }catch(err){
-    setSaveStatus('Gagal menyinkron ke sheet: ' + err.message + ' (data tetap aman di browser)', 'err');
+    setSaveStatus('Gagal submit ke sheet: ' + err.message + ' (data tetap aman di browser, coba Submit lagi)', 'err');
   }finally{
     isSyncing = false;
     btnSave.disabled = isLocked; btnSubmit.disabled = isLocked;
   }
 }
 
-document.getElementById('btnSave').addEventListener('click', () => doSave('save'));
+document.getElementById('btnSave').addEventListener('click', doSaveLocal);
 document.getElementById('btnSubmit').addEventListener('click', () => {
-  if(confirm('Data akan disubmit final ke Google Sheet dan tidak bisa diedit lagi lewat draf browser. Lanjutkan?')){
-    doSave('submit');
+  if(confirm('Data akan dikirim final ke Google Sheet dan tidak bisa diedit lagi lewat draf browser. Lanjutkan?')){
+    doSubmit();
   }
 });
 </script>
