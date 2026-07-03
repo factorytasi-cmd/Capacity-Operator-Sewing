@@ -168,6 +168,18 @@
   }
   .jam-input:focus{outline:1px solid var(--teal);}
   .jam-input.filled{border-color:#2f3944;background:#1d232a;}
+  .quickfill-input{
+    width:70px;
+    background:#1a2129;
+    border:1px dashed var(--teal);
+    color:var(--teal);
+    border-radius:6px;
+    padding:6px 6px;
+    text-align:center;
+    font-size:12px;
+  }
+  .quickfill-input::placeholder{color:#3a7a72;font-size:10.5px;}
+  .quickfill-input:focus{outline:1px solid var(--teal);background:#1d2b28;}
   .rerata-val{font-weight:600;}
   .eff-chip{
     display:inline-block;min-width:56px;
@@ -536,6 +548,9 @@ function renderTable(){
       <td class="col-info" title="${escapeHtml(op.style)}">${escapeHtml(op.style)}</td>
       <td class="col-info" title="${escapeHtml(op.proses)}">${escapeHtml(op.proses)}</td>
       <td>${op.target !== '' ? op.target : '<span class="eff-empty">-</span>'}</td>
+      <td><input type="number" min="0" class="quickfill-input" data-idx="${idx}"
+        placeholder="Isi 7 jam" title="Isi angka lalu tekan Enter — akan mengisi 7 jam berikutnya yang masih kosong"
+        ${isLocked?'disabled':''}></td>
       ${jamCells}
       <td class="rerata-val" data-rerata-idx="${idx}">${rerata !== '' ? rerata.toFixed(1) : '-'}</td>
       <td data-eff-idx="${idx}">${effChip(eff)}</td>
@@ -551,6 +566,7 @@ function renderTable(){
         <th class="col-info">Style</th>
         <th class="col-info">Proses</th>
         <th>Target</th>
+        <th>Isi 7 Jam</th>
         ${jamHeaders}
         <th>Rerata</th>
         <th>Efisiensi</th>
@@ -562,6 +578,62 @@ function renderTable(){
   container.querySelectorAll('.jam-input').forEach(input => {
     input.addEventListener('input', onJamInput);
   });
+  container.querySelectorAll('.quickfill-input').forEach(input => {
+    input.addEventListener('keydown', onQuickFillKeydown);
+    input.addEventListener('blur', onQuickFillBlur);
+  });
+}
+
+function onQuickFillKeydown(e){
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    applyQuickFill(e.target);
+    e.target.blur();
+  }
+}
+
+function onQuickFillBlur(e){
+  applyQuickFill(e.target);
+}
+
+function applyQuickFill(inputEl){
+  const idx = Number(inputEl.dataset.idx);
+  const raw = inputEl.value;
+  inputEl.value = ''; // kotak ini cuma pemicu, bukan tempat penyimpanan
+  if(raw === '' || isNaN(raw)) return;
+
+  const value = Number(raw);
+  const op = currentOperators[idx];
+
+  // Cari jam kosong pertama sebagai titik mulai
+  let startH = null;
+  for(let h=1; h<=CONFIG.JAM_COUNT; h++){
+    if(op.jam[h] === undefined || op.jam[h] === ''){ startH = h; break; }
+  }
+  if(startH === null) return; // semua jam sudah terisi, tidak ada yang perlu diisi
+
+  const endH = Math.min(startH + 6, CONFIG.JAM_COUNT); // isi 7 jam (termasuk jam mulai)
+  for(let h=startH; h<=endH; h++){
+    op.jam[h] = value;
+    const jamInput = container_querySelectorJam(idx, h);
+    if(jamInput){
+      jamInput.value = value;
+      jamInput.classList.add('filled');
+    }
+  }
+
+  const rerata = computeRerata(op.jam);
+  const eff = computeEfficiency(rerata, op.target);
+  document.querySelector(`[data-rerata-idx="${idx}"]`).textContent = rerata !== '' ? rerata.toFixed(1) : '-';
+  document.querySelector(`[data-eff-idx="${idx}"]`).innerHTML = effChip(eff);
+
+  persistCurrentToLocal();
+  setSaveStatus('Tersimpan di browser (belum dikirim ke sheet).', '');
+  updateAvgEfficiency();
+}
+
+function container_querySelectorJam(idx, h){
+  return document.querySelector(`.jam-input[data-idx="${idx}"][data-jam="${h}"]`);
 }
 
 function onJamInput(e){
