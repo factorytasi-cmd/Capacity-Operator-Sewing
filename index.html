@@ -98,6 +98,8 @@
   .btn-teal:hover:not(:disabled){opacity:.9;}
   .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-main);}
   .btn-ghost:hover:not(:disabled){border-color:var(--teal);color:var(--teal);}
+  .btn-danger-ghost{background:transparent;border:1px solid var(--red);color:var(--red);}
+  .btn-danger-ghost:hover:not(:disabled){background:var(--red-bg);}
 
   /* ---------- CONTROL PANEL ---------- */
   .controls{
@@ -271,6 +273,7 @@
 <div class="footerbar">
   <button class="btn btn-teal" id="btnSave" disabled>Simpan</button>
   <button class="btn btn-orange" id="btnSubmit" disabled>Submit ke Sheet</button>
+  <button class="btn btn-danger-ghost" id="btnClear" disabled>Hapus Data</button>
   <div class="save-status" id="saveStatus">Belum ada perubahan</div>
 </div>
 
@@ -454,6 +457,7 @@ function onLineOrDateChange(){
     document.getElementById('statCount').textContent = '0';
     document.getElementById('btnSave').disabled = true;
     document.getElementById('btnSubmit').disabled = true;
+    document.getElementById('btnClear').disabled = true;
     return;
   }
 
@@ -478,6 +482,7 @@ function onLineOrDateChange(){
   document.getElementById('statDate').textContent = tanggal;
   document.getElementById('btnSave').disabled = false;
   document.getElementById('btnSubmit').disabled = false;
+  document.getElementById('btnClear').disabled = false;
   updateAvgEfficiency();
 
   if(localDraft){
@@ -708,7 +713,8 @@ async function doSubmit(){
 
   const btnSave = document.getElementById('btnSave');
   const btnSubmit = document.getElementById('btnSubmit');
-  btnSave.disabled = true; btnSubmit.disabled = true;
+  const btnClear = document.getElementById('btnClear');
+  btnSave.disabled = true; btnSubmit.disabled = true; btnClear.disabled = true;
   setSaveStatus('Mengirim submit final ke sheet...', '');
 
   while(isSyncing){ await new Promise(r => setTimeout(r, 200)); }
@@ -724,11 +730,27 @@ async function doSubmit(){
     setSaveStatus('Gagal submit ke sheet: ' + err.message + ' (data tetap aman di browser, coba Submit lagi)', 'err');
   }finally{
     isSyncing = false;
-    btnSave.disabled = isLocked; btnSubmit.disabled = isLocked;
+    btnSave.disabled = isLocked; btnSubmit.disabled = isLocked; btnClear.disabled = isLocked;
   }
 }
 
+function doClearData(){
+  if(!currentLine){ return; }
+  const konfirmasi = confirm(
+    'Hapus SEMUA data jam yang sudah diisi untuk Line ' + currentLine + ' tanggal ' + currentTanggal + '?\n\n' +
+    'Ini hanya menghapus draf di browser ini. Data yang sudah pernah di-Submit ke Google Sheet tidak akan terhapus.'
+  );
+  if(!konfirmasi) return;
+
+  currentOperators.forEach(op => { op.jam = {}; });
+  clearLocalDraft(currentTanggal, currentLine);
+  renderTable();
+  updateAvgEfficiency();
+  setSaveStatus('Data draf di browser sudah dihapus.', '');
+}
+
 document.getElementById('btnSave').addEventListener('click', doSaveLocal);
+document.getElementById('btnClear').addEventListener('click', doClearData);
 document.getElementById('btnSubmit').addEventListener('click', () => {
   if(confirm('Data akan dikirim final ke Google Sheet dan tidak bisa diedit lagi lewat draf browser. Lanjutkan?')){
     doSubmit();
