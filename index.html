@@ -268,6 +268,44 @@ const CONFIG = {
 
 let currentOperators = []; // state di memori: array of {nip,nama,line,style,proses,target,jam:{}}
 let isLocked = false;
+let currentLine = '';
+let currentTanggal = '';
+let syncTimer = null;
+
+const STORAGE_KEY = 'litra_asi_capacity_draft_v1';
+
+function draftKey(tanggal, line){ return tanggal + '||' + line; }
+
+function loadAllDrafts(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  }catch(e){ return {}; }
+}
+
+function saveLocalDraft(tanggal, line, rows){
+  const all = loadAllDrafts();
+  all[draftKey(tanggal, line)] = { savedAt: Date.now(), rows };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+}
+
+function getLocalDraft(tanggal, line){
+  const all = loadAllDrafts();
+  return all[draftKey(tanggal, line)] || null;
+}
+
+function clearLocalDraft(tanggal, line){
+  const all = loadAllDrafts();
+  delete all[draftKey(tanggal, line)];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+}
+
+function persistCurrentToLocal(){
+  if(!currentTanggal || !currentLine) return;
+  saveLocalDraft(currentTanggal, currentLine, currentOperators.map(op => ({
+    nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
+    target: op.target, jam: op.jam
+  })));
+}
 
 // ---------- CLOCK ----------
 function updateClock(){
@@ -333,7 +371,17 @@ document.getElementById('btnLoad').addEventListener('click', async () => {
   btn.disabled = true; btn.textContent = 'Memuat...';
   try{
     const data = await apiGet({ action:'getOperators', line, tanggal });
-    currentOperators = data.map(op => ({...op, jam: op.jam || {}}));
+    const localDraft = getLocalDraft(tanggal, line);
+    const localByNip = {};
+    if(localDraft){
+      localDraft.rows.forEach(r => { localByNip[String(r.nip)] = r.jam || {}; });
+    }
+    currentOperators = data.map(op => ({
+      ...op,
+      jam: localByNip[String(op.nip)] || op.jam || {}
+    }));
+    currentLine = line;
+    currentTanggal = tanggal;
     isLocked = false;
     renderTable();
     document.getElementById('statLine').textContent = line;
@@ -341,7 +389,11 @@ document.getElementById('btnLoad').addEventListener('click', async () => {
     document.getElementById('statDate').textContent = tanggal;
     document.getElementById('btnSave').disabled = false;
     document.getElementById('btnSubmit').disabled = false;
-    setSaveStatus('Data dimuat. Silakan isi kapasitas aktual.', '');
+    if(localDraft){
+      setSaveStatus('Melanjutkan draf tersimpan di browser ini.', '');
+    }else{
+      setSaveStatus('Data dimuat. Silakan isi kapasitas aktual.', '');
+    }
     updateAvgEfficiency();
   }catch(err){
     alert('Gagal memuat data: ' + err.message);
@@ -417,8 +469,30 @@ function onJamInput(e){
   document.querySelector(`[data-rerata-idx="${idx}"]`).textContent = rerata !== '' ? rerata.toFixed(1) : '-';
   document.querySelector(`[data-eff-idx="${idx}"]`).innerHTML = effChip(eff);
 
-  setSaveStatus('Ada perubahan belum disimpan', '');
+  persistCurrentToLocal();
+  setSaveStatus('Tersimpan di browser. Menunggu sinkron ke sheet...', '');
   updateAvgEfficiency();
+  scheduleBackgroundSync();
+}
+
+function scheduleBackgroundSync(){
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => backgroundSync(), 1500);
+}
+
+async function backgroundSync(){
+  if(!currentTanggal || !currentLine || currentOperators.length === 0) return;
+  const rows = currentOperators.map(op => ({
+    nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
+    target: op.target, jam: op.jam
+  }));
+  try{
+    await apiPost({ action:'save', tanggal: currentTanggal, rows });
+    const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
+    setSaveStatus('Tersimpan (lokal) & tersinkron ke sheet pukul ' + now, 'ok');
+  }catch(err){
+    setSaveStatus('Tersimpan lokal, gagal sinkron ke sheet (' + err.message + '). Klik Simpan untuk coba lagi.', 'err');
+  }
 }
 
 function computeRerata(jamObj){
@@ -462,25 +536,30 @@ function setSaveStatus(text, type){
 
 // ---------- SAVE ----------
 async function doSave(mode){
-  const tanggal = document.getElementById('inputTanggal').value;
+  const tanggal = currentTanggal;
   const rows = currentOperators.map(op => ({
     nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
     target: op.target, jam: op.jam
   }));
+  clearTimeout(syncTimer); // batalkan auto-sync yang mungkin sedang dijadwalkan, kirim sekarang juga
+
   const btnSave = document.getElementById('btnSave');
   const btnSubmit = document.getElementById('btnSubmit');
   btnSave.disabled = true; btnSubmit.disabled = true;
-  setSaveStatus('Menyimpan...', '');
+  setSaveStatus(mode === 'submit' ? 'Mengirim submit final...' : 'Menyinkronkan ke sheet...', '');
   try{
     await apiPost({ action: mode, tanggal, rows });
     const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
-    setSaveStatus((mode === 'submit' ? 'Berhasil disubmit' : 'Tersimpan') + ' pukul ' + now, 'ok');
     if(mode === 'submit'){
+      clearLocalDraft(currentTanggal, currentLine);
       isLocked = true;
       renderTable();
+      setSaveStatus('Berhasil disubmit final pukul ' + now, 'ok');
+    }else{
+      setSaveStatus('Tersimpan (lokal) & tersinkron ke sheet pukul ' + now, 'ok');
     }
   }catch(err){
-    setSaveStatus('Gagal menyimpan: ' + err.message, 'err');
+    setSaveStatus('Gagal menyinkron ke sheet: ' + err.message + ' (data tetap aman di browser)', 'err');
   }finally{
     btnSave.disabled = isLocked; btnSubmit.disabled = isLocked;
   }
@@ -488,7 +567,7 @@ async function doSave(mode){
 
 document.getElementById('btnSave').addEventListener('click', () => doSave('save'));
 document.getElementById('btnSubmit').addEventListener('click', () => {
-  if(confirm('Data akan disubmit final ke Google Sheet. Lanjutkan?')){
+  if(confirm('Data akan disubmit final ke Google Sheet dan tidak bisa diedit lagi lewat draf browser. Lanjutkan?')){
     doSave('submit');
   }
 });
