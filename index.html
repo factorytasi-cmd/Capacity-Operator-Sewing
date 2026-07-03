@@ -566,8 +566,7 @@ function renderTable(){
 function onQuickFillKeydown(e){
   if(e.key === 'Enter' || e.keyCode === 13){
     e.preventDefault();
-    e.stopPropagation();
-    e.target.blur(); // blur akan memicu onQuickFillBlur -> applyQuickFill
+    applyQuickFill(e.target);
   }
 }
 
