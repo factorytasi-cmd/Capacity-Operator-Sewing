@@ -276,6 +276,8 @@ let isLocked = false;
 let currentLine = '';
 let currentTanggal = '';
 let syncTimer = null;
+let isSyncing = false;
+let pendingSyncAfter = false;
 
 const STORAGE_KEY = 'litra_asi_capacity_draft_v1';
 
@@ -487,6 +489,14 @@ function scheduleBackgroundSync(){
 
 async function backgroundSync(){
   if(!currentTanggal || !currentLine || currentOperators.length === 0) return;
+
+  if(isSyncing){
+    // ada request lain sedang berjalan, tandai supaya sync ulang setelah selesai
+    pendingSyncAfter = true;
+    return;
+  }
+
+  isSyncing = true;
   const rows = currentOperators.map(op => ({
     nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
     target: op.target, jam: op.jam
@@ -497,6 +507,12 @@ async function backgroundSync(){
     setSaveStatus('Tersimpan (lokal) & tersinkron ke sheet pukul ' + now, 'ok');
   }catch(err){
     setSaveStatus('Tersimpan lokal, gagal sinkron ke sheet (' + err.message + '). Klik Simpan untuk coba lagi.', 'err');
+  }finally{
+    isSyncing = false;
+    if(pendingSyncAfter){
+      pendingSyncAfter = false;
+      backgroundSync(); // kirim state terbaru sekali lagi setelah yang tadi selesai
+    }
   }
 }
 
@@ -552,6 +568,10 @@ async function doSave(mode){
   const btnSubmit = document.getElementById('btnSubmit');
   btnSave.disabled = true; btnSubmit.disabled = true;
   setSaveStatus(mode === 'submit' ? 'Mengirim submit final...' : 'Menyinkronkan ke sheet...', '');
+
+  // tunggu kalau ada auto-sync yang sedang berjalan, supaya tidak tabrakan
+  while(isSyncing){ await new Promise(r => setTimeout(r, 200)); }
+  isSyncing = true;
   try{
     await apiPost({ action: mode, tanggal, rows });
     const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
@@ -566,6 +586,7 @@ async function doSave(mode){
   }catch(err){
     setSaveStatus('Gagal menyinkron ke sheet: ' + err.message + ' (data tetap aman di browser)', 'err');
   }finally{
+    isSyncing = false;
     btnSave.disabled = isLocked; btnSubmit.disabled = isLocked;
   }
 }
