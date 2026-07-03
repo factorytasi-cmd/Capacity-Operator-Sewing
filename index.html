@@ -591,10 +591,10 @@ function renderTable(){
 }
 
 function onQuickFillKeydown(e){
-  if(e.key === 'Enter'){
+  if(e.key === 'Enter' || e.keyCode === 13){
     e.preventDefault();
-    applyQuickFill(e.target);
-    e.target.blur();
+    e.stopPropagation();
+    e.target.blur(); // blur akan memicu onQuickFillBlur -> applyQuickFill
   }
 }
 
