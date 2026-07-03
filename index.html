@@ -3,752 +3,818 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LITRA-ASI - Sewing Daily Capacity Input</title>
+<title>LITRA-ASI — Manufacturing Intelligence Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-dark:#0b0e11;
-    --bg-panel:#14181d;
-    --bg-panel-2:#1b2026;
-    --border:#262c33;
-    --teal:#2dd4bf;
-    --orange:#f5a623;
-    --red:#e0555f;
-    --red-bg:#2a1417;
-    --yellow:#e0b23f;
-    --yellow-bg:#2a2413;
-    --green:#3fbf6f;
-    --green-bg:#122a1b;
-    --text-main:#e7ebee;
-    --text-dim:#8a94a0;
-    --text-faint:#5c6570;
-    --radius:10px;
+    --bg:#0B0C0B; --bg-1:#111310; --surface:#15160F; --surface-2:#1A1C17;
+    --border:#232620; --border-strong:#2A2D26;
+    --text:#F2F2EC; --text-2:#B8BAB2; --text-3:#8A8C82; --text-4:#5C5E58;
+    --amber:#F5A623; --amber-ink:#211802;
+    --red:#F87171; --red-bg:#1A1210; --red-border:#3A211E; --red-soft:#F0B4B1;
+    --orange:#FB923C; --orange-bg:#1D160E; --orange-border:#46311A; --orange-soft:#F5C79E;
+    --yellow:#EAB308; --yellow-bg:#1D1B0E; --yellow-border:#47401A; --yellow-soft:#F5D89E;
+    --green:#4ADE80; --green-bg:#101D14; --green-border:#1E4728; --green-soft:#9EF5BC;
+    --radius:8px;
   }
-  *{box-sizing:border-box;}
-  html, body{
-    margin:0;
-    height:100%;
-  }
-  body{
-    background:var(--bg-dark);
-    color:var(--text-main);
-    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-    font-size:14px;
-    display:flex;
-    flex-direction:column;
-    height:100vh;
-    overflow:hidden;
-  }
-  /* ---------- HEADER ---------- */
-  header.topbar{
-    background:#000;
-    padding:12px 22px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    border-bottom:1px solid var(--border);
-    flex-shrink:0;
-  }
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand .logo{
-    width:34px;height:34px;border-radius:8px;
-    background:linear-gradient(135deg,var(--teal),#0f8f80);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:700;color:#04201c;font-size:15px;
-  }
-  .brand .titles h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.2px;}
-  .brand .titles p{margin:0;font-size:11.5px;color:var(--text-dim);}
-  .topbar-right{display:flex;align-items:center;gap:16px;}
-  .status-dot{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dim);}
-  .status-dot span.dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;}
-  .clock{font-size:12.5px;color:var(--text-dim);font-variant-numeric:tabular-nums;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',monospace}
+  button{cursor:pointer;font-family:inherit}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
 
-  /* ---------- STAT BAR ---------- */
-  .statbar{
-    display:flex;flex-wrap:wrap;gap:14px;
-    padding:16px 22px;align-items:stretch;
-    flex-shrink:0;
-  }
-  .stat-card{
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:10px 16px;
-    min-width:140px;
-  }
-  .stat-card .label{font-size:10.5px;letter-spacing:.4px;color:var(--text-faint);text-transform:uppercase;}
-  .stat-card .value{font-size:20px;font-weight:600;margin-top:3px;}
-  .stat-card .value.small{font-size:14px;font-weight:500;color:var(--text-dim);}
-  .spacer{flex:1;}
-  .btn{
-    border:none;border-radius:8px;
-    padding:10px 20px;font-size:13.5px;font-weight:700;
-    font-family:'Poppins','Segoe UI',system-ui,sans-serif;
-    letter-spacing:.3px;
-    cursor:pointer;display:inline-flex;align-items:center;gap:8px;
-    transition:opacity .15s ease, transform .05s ease;
-  }
-  .btn:active{transform:scale(.98);}
-  .btn:disabled{opacity:.45;cursor:not-allowed;}
-  .btn-orange{background:var(--orange);color:#241704;}
-  .btn-orange:hover:not(:disabled){opacity:.9;}
-  .btn-teal{background:var(--teal);color:#04201c;}
-  .btn-teal:hover:not(:disabled){opacity:.9;}
-  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-main);}
-  .btn-ghost:hover:not(:disabled){border-color:var(--teal);color:var(--teal);}
-  .btn-danger-ghost{background:transparent;border:1px solid var(--red);color:var(--red);}
-  .btn-danger-ghost:hover:not(:disabled){background:var(--red-bg);}
+  /* APP BAR */
+  .appbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--bg-1);border-bottom:1px solid var(--border)}
+  .appbar-title{font-size:13px;font-weight:600;color:var(--text-2);letter-spacing:.01em}
+  .appbar-right{display:flex;align-items:center;gap:14px}
+  .live-badge{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3)}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .icon-btn{background:none;border:1px solid var(--border-strong);color:var(--text-3);border-radius:6px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .icon-btn:hover{color:var(--text);border-color:var(--text-4)}
 
-  /* ---------- CONTROL PANEL ---------- */
-  .controls{
-    margin:0 22px 16px 22px;
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:16px 18px;
-    display:flex;align-items:end;gap:16px;flex-wrap:wrap;
-    flex-shrink:0;
-  }
-  .field{display:flex;flex-direction:column;gap:6px;}
-  .field label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;}
-  .field select, .field input[type=date]{
-    background:var(--bg-panel-2);
-    border:1px solid var(--border);
-    color:var(--text-main);
-    border-radius:7px;
-    padding:9px 12px;
-    font-size:13.5px;
-    min-width:180px;
-  }
-  .field select:focus, .field input:focus{outline:1px solid var(--teal);}
+  /* CHAT HEADER — sengaja dibiarkan terang, tidak ikut tema gelap */
+  .chatbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#FFFFFF;font-family:'Syne',sans-serif;border-bottom:1px solid #e7e5df}
+  .chatbar-left{display:flex;align-items:center;gap:10px}
+  .chatbar-logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#3893D6 0%,#23978D 100%);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+  .chatbar-name{font-size:14px;font-weight:700;color:#1a1a18;line-height:1.2}
+  .chatbar-tagline{font-size:10px;color:#a08a8a;line-height:1.3}
+  .chatbar-right{display:flex;align-items:center;gap:12px}
+  .pill-toggle{display:flex;align-items:center;gap:5px;font-size:11px;padding:6px 12px;border-radius:99px;background:#f1f0ec;color:#6b6b67;border:none}
+  .pill-toggle.active{background:#dff3ec;color:#1d7a5f}
+  .chat-open-btn{font-size:11px;color:#6b6b67;background:none;border:none;display:flex;align-items:center;gap:3px}
 
-  /* ---------- TABLE ---------- */
-  .table-wrap{
-    margin:0 22px 16px 22px;
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    overflow:auto;
-    flex:1;
-    min-height:0;
-  }
-  table{border-collapse:collapse;width:100%;min-width:1500px;}
-  thead th{
-    position:sticky;top:0;z-index:3;
-    background:#1a1f25;
-    color:var(--text-dim);
-    font-size:11px;text-transform:uppercase;letter-spacing:.3px;
-    padding:10px 8px;text-align:center;
-    border-bottom:1px solid var(--border);
-    white-space:nowrap;
-  }
-  tbody td{
-    padding:6px 8px;
-    border-bottom:1px solid #1d2228;
-    text-align:center;
-    white-space:nowrap;
-    font-size:13px;
-  }
-  tbody tr:hover{background:#171c22;}
-  td.col-nama, th.col-nama{text-align:left;min-width:150px;}
-  td.col-info, th.col-info{text-align:left;max-width:150px;overflow:hidden;text-overflow:ellipsis;}
-  th.sticky-1, td.sticky-1{position:sticky;left:0;background:var(--bg-panel);z-index:2;}
-  th.sticky-2, td.sticky-2{position:sticky;left:36px;background:var(--bg-panel);z-index:2;}
-  thead th.sticky-1, thead th.sticky-2{background:#1a1f25;z-index:4;}
-  td.col-no{color:var(--text-faint);}
-  .jam-input{
-    width:52px;
-    background:var(--bg-panel-2);
-    border:1px solid var(--border);
-    color:var(--text-main);
-    border-radius:6px;
-    padding:6px 4px;
-    text-align:center;
-    font-size:13px;
-  }
-  .jam-input:focus{outline:1px solid var(--teal);}
-  .jam-input.filled{border-color:#2f3944;background:#1d232a;}
-  .quickfill-input{
-    width:70px;
-    background:#1a2129;
-    border:1px dashed var(--teal);
-    color:var(--teal);
-    border-radius:6px;
-    padding:6px 6px;
-    text-align:center;
-    font-size:12px;
-  }
-  .quickfill-input::placeholder{color:#3a7a72;font-size:10.5px;}
-  .quickfill-input:focus{outline:1px solid var(--teal);background:#1d2b28;}
-  .rerata-val{font-weight:600;}
-  .eff-chip{
-    display:inline-block;min-width:56px;
-    padding:4px 8px;border-radius:6px;
-    font-weight:700;font-size:12.5px;
-  }
-  .eff-green{background:var(--green-bg);color:var(--green);}
-  .eff-yellow{background:var(--yellow-bg);color:var(--yellow);}
-  .eff-red{background:var(--red-bg);color:var(--red);}
-  .eff-empty{color:var(--text-faint);}
+  .chatroom{background:#FFFFFF;border-bottom:1px solid #e7e5df;font-family:'Sora',sans-serif}
+  .chat-log{max-height:280px;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+  .msg-user{align-self:flex-end;background:var(--amber);color:var(--amber-ink);font-size:12px;font-weight:500;padding:8px 12px;border-radius:12px 12px 2px 12px;max-width:75%}
+  .msg-bot{align-self:flex-start;display:flex;gap:8px;max-width:82%}
+  .msg-bot-avatar{width:22px;height:22px;flex-shrink:0;border-radius:50%;background:#eef;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#3893D6;background:#eaf3fb;font-family:'Syne',sans-serif}
+  .msg-bot-bubble{background:#f6f5f1;color:#33322d;font-size:12px;line-height:1.55;padding:9px 12px;border-radius:2px 12px 12px 12px}
+  .chat-inputrow{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #e7e5df}
+  .chat-input{flex:1;background:#f6f5f1;border:1px solid #e7e5df;border-radius:8px;padding:9px 12px;font-size:12px;font-family:'Sora',sans-serif;color:#1a1a18}
+  .chat-input:focus{outline:none;border-color:#3893D6}
+  .chat-icon-btn{width:32px;height:32px;border-radius:8px;background:#f6f5f1;border:1px solid #e7e5df;display:flex;align-items:center;justify-content:center;color:#6b6b67;flex-shrink:0}
+  .chat-icon-btn.send{background:var(--amber);color:var(--amber-ink);border:none}
+  .chat-icon-btn.listening{background:#fdeaea;color:#c94b4b;border-color:#f3caca}
+  .chat-hint{font-size:10px;color:#a3a199;padding:0 18px 10px}
+  .chat-suggest-row{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 10px}
+  .chat-suggest-chip{font-size:10.5px;padding:6px 11px;border-radius:99px;background:#f6f5f1;border:1px solid #e7e5df;color:#4a4a45;font-family:'Sora',sans-serif}
+  .chat-suggest-chip:hover{background:#efeee9;border-color:#d8d6cf}
 
-  .empty-state{padding:60px 20px;text-align:center;color:var(--text-faint);}
-  .empty-state h3{color:var(--text-dim);margin-bottom:6px;font-weight:600;}
+  /* BODY */
+  .app-body{display:flex;min-height:calc(100vh - 140px)}
+  .sidebar{width:76px;flex-shrink:0;border-right:1px solid var(--border);padding:12px 0;background:var(--bg)}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-left:2px solid transparent;color:var(--text-3)}
+  .nav-item.active{border-left-color:var(--amber);background:rgba(245,166,35,.08);color:var(--amber)}
+  .nav-item span{font-size:9px;letter-spacing:.03em;font-weight:500}
+  .nav-item svg{width:16px;height:16px}
 
-  /* ---------- FOOTER ACTION BAR ---------- */
-  .footerbar{
-    background:#000;border-top:1px solid var(--border);
-    padding:14px 22px;
-    display:flex;align-items:center;gap:14px;
-    flex-shrink:0;
-  }
-  .save-status{font-size:12.5px;color:var(--text-dim);}
-  .save-status.ok{color:var(--green);}
-  .save-status.err{color:var(--red);}
+  .main{flex:1;padding:16px 18px;min-width:0}
 
-  ::-webkit-scrollbar{height:10px;width:10px;}
-  ::-webkit-scrollbar-track{background:var(--bg-dark);}
-  ::-webkit-scrollbar-thumb{background:#2a3038;border-radius:6px;}
+  /* TOOLBAR / SUMMARY ROW */
+  .toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .stat-row{display:flex;gap:8px;flex-wrap:wrap}
+  .stat-chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:7px 12px;min-width:92px}
+  .stat-chip-label{font-size:9px;color:var(--text-3);font-weight:500;letter-spacing:.03em;margin-bottom:2px}
+  .stat-chip-value{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:500;color:var(--text)}
+  .stat-chip-value.muted{color:var(--text-4);font-size:11px;font-family:'Sora',sans-serif}
+  .btn{font-size:11px;padding:8px 14px;border-radius:6px;font-weight:600;border:1px solid var(--border-strong);background:var(--surface);color:var(--text-2)}
+  .btn:hover{border-color:var(--text-4)}
+  .btn-primary{background:var(--amber);color:var(--amber-ink);border:none}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  /* STATUS GRID */
+  .status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+  @media (max-width:1000px){.status-grid{grid-template-columns:repeat(2,1fr)}}
+  .status-col{border-radius:8px;padding:12px;min-height:170px;max-height:340px;overflow-y:auto}
+  .status-col-title{font-size:12px;font-weight:600;margin-bottom:5px}
+  .status-col-desc{font-size:10px;line-height:1.5;margin-bottom:10px}
+  .status-line-item{border-radius:5px;padding:7px 9px;margin-bottom:5px;font-size:11px}
+  .status-line-code{font-family:'JetBrains Mono',monospace;font-weight:500}
+  .status-line-meta{font-size:10px;opacity:.8;margin-top:2px}
+  .status-empty{font-size:10px;opacity:.55;padding:6px 0}
+  .status-wip-top{font-size:10px;background:rgba(255,255,255,.06);border-radius:4px;padding:5px 8px;margin-bottom:8px}
+  .status-wip-top b{font-family:'JetBrains Mono',monospace;font-weight:500}
+  .status-suggest{margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.08);font-size:10.5px;line-height:1.55;color:inherit;opacity:.95;white-space:pre-line}
+  .status-suggest:empty{display:none}
+  .status-suggest.loading{opacity:.6;font-style:italic}
+
+  .col-bigproblem{background:var(--red-bg);border:1px solid var(--red-border)}
+  .col-bigproblem .status-col-title{color:var(--red)}
+  .col-bigproblem .status-col-desc{color:#B8938E}
+  .col-bigproblem .status-line-item{background:#231514;color:var(--red-soft)}
+
+  .col-urgent{background:var(--orange-bg);border:1px solid var(--orange-border)}
+  .col-urgent .status-col-title{color:var(--orange)}
+  .col-urgent .status-col-desc{color:#C2A587}
+  .col-urgent .status-line-item{background:#291D10;color:var(--orange-soft)}
+
+  .col-prioritas{background:var(--yellow-bg);border:1px solid var(--yellow-border)}
+  .col-prioritas .status-col-title{color:var(--yellow)}
+  .col-prioritas .status-col-desc{color:#C2BC87}
+  .col-prioritas .status-line-item{background:#292410;color:var(--yellow-soft)}
+
+  .col-apreciate{background:var(--green-bg);border:1px solid var(--green-border)}
+  .col-apreciate .status-col-title{color:var(--green)}
+  .col-apreciate .status-col-desc{color:#8FC2A0}
+  .col-apreciate .status-line-item{background:#102916;color:var(--green-soft)}
+
+  /* MONITOR GRID */
+  .monitor-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  @media (max-width:1000px){.monitor-grid{grid-template-columns:repeat(2,1fr)}}
+  .monitor-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px}
+  .monitor-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .monitor-body{font-size:10.5px;color:var(--text-3);line-height:1.55}
+  .monitor-body.empty{color:var(--text-4)}
+  .monitor-sub{border-top:1px solid var(--border);margin-top:8px;padding-top:8px}
+  .pill-soon{font-size:9px;padding:1px 7px;border-radius:99px;background:var(--surface-2);color:var(--text-4);border:1px solid var(--border-strong)}
+  .style-change-item{background:var(--surface-2);border-radius:5px;padding:6px 8px;margin-bottom:5px;font-size:10.5px;color:var(--text-2)}
+  .style-change-item b{color:var(--text);font-family:'JetBrains Mono',monospace;font-weight:500}
+  .monitor-suggest{margin-top:9px;padding-top:9px;border-top:1px solid var(--border);font-size:10.5px;line-height:1.55;color:var(--text-2);white-space:pre-line}
+  .monitor-suggest:empty{display:none}
+  .monitor-suggest.loading{opacity:.6;font-style:italic}
+
+  /* SUGGEST PANEL */
+
+
+  /* CONFIG PANEL */
+  .config-panel{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:none}
+  .config-panel.open{display:block}
+  .config-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .config-item{display:flex;flex-direction:column;gap:3px}
+  .config-label{font-size:9px;color:var(--text-3);font-weight:500}
+  .config-input{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 9px;border-radius:5px;border:1px solid var(--border-strong);background:var(--bg-1);color:var(--text)}
+
+  .footer{padding:8px 18px;background:var(--bg-1);border-top:1px solid var(--border);font-size:9px;color:var(--text-4);font-family:'JetBrains Mono',monospace;display:flex;justify-content:space-between}
+
+  .loading-line{font-size:11px;color:var(--text-3);padding:20px;text-align:center}
+  .err-box{font-size:11px;color:var(--red);background:var(--red-bg);border:1px solid var(--red-border);border-radius:6px;padding:10px 12px;margin-bottom:10px}
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="brand">
-    <div class="logo">L</div>
-    <div class="titles">
-      <h1>LITRA-ASI</h1>
-      <p>Lean Intelligence Tracking &amp; Realtime Analytics - ASI</p>
+<div class="appbar">
+  <div class="appbar-title">Industrial Manufacturing Intelligence Dashboard</div>
+  <div class="appbar-right">
+    <div class="live-badge"><div class="live-dot"></div><span id="lastUpdate">Belum ada data</span></div>
+    <button class="icon-btn" id="cfgToggle" onclick="toggleCfg()" title="Konfigurasi">&#9881;</button>
+    <button class="icon-btn" id="fsBtn" onclick="toggleFullscreen()" title="Fullscreen">&#9974;</button>
+    <span class="mono" id="dateNow" style="font-size:11px;color:var(--text-3)"></span>
+  </div>
+</div>
+
+<div class="config-panel" id="cfgPanel">
+  <div class="config-grid">
+    <div class="config-item"><label class="config-label">Sheet ID — Efisiensi &amp; Repair</label><input class="config-input" id="c-eff" value="1s7fBhVdlNwjRGqAObW1-P7Dk7ZBBG1dBrbMkJrh4EBk"></div>
+    <div class="config-item"><label class="config-label">Sheet ID — Planning</label><input class="config-input" id="c-plan" value="1JrhmIBoiYUUHcDHIAchUD9gY-eBs6pkwuky4e63509s"></div>
+    <div class="config-item"><label class="config-label">Nama Sheet Efisiensi</label><input class="config-input" id="c-es" value="Efisiensi Line New"></div>
+    <div class="config-item"><label class="config-label">Nama Sheet Repair</label><input class="config-input" id="c-rs" value="Repair Line New"></div>
+    <div class="config-item"><label class="config-label">Nama Sheet Output Per Jam</label><input class="config-input" id="c-opj" value="Output (Line) Per Jam New"></div>
+    <div class="config-item"><label class="config-label">Nama Sheet Planning</label><input class="config-input" id="c-ps" value="Planning 2026 (Masa Depan)"></div>
+    <div class="config-item"><label class="config-label">Sheet ID — Kapasitas Operator</label><input class="config-input" id="c-opid" value="1W7MMl-PWRoi1aQiTOHGrDY84GUVcbnYgDKzWS-YGzNs"></div>
+    <div class="config-item"><label class="config-label">Nama Sheet Operator</label><input class="config-input" id="c-opsh" value="KAPASITAS OPERATOR"></div>
+    <div class="config-item"><label class="config-label">Nama Sheet WIP</label><input class="config-input" id="c-wip" value="WIP SEW Per Line New"></div>
+  </div>
+  <div style="margin-top:10px"><button class="btn btn-primary" onclick="loadAll()">Ambil Data</button></div>
+</div>
+
+<div class="chatbar" onclick="toggleChat()" style="cursor:pointer">
+  <div class="chatbar-left">
+    <div class="chatbar-logo">L</div>
+    <div>
+      <div class="chatbar-name">LITRA-ASI</div>
+      <div class="chatbar-tagline">Lean Intelligence Tracking &amp; Realtime Analytics - ASI</div>
     </div>
   </div>
-  <div class="topbar-right">
-    <div class="status-dot"><span class="dot"></span><span id="connStatus">Menghubungkan...</span></div>
-    <div class="clock" id="clock">--:--:--</div>
+  <div class="chatbar-right">
+    <button class="pill-toggle" id="voiceToggle" onclick="event.stopPropagation();toggleVoice()">
+      <span id="voiceIcon">&#128263;</span><span id="voiceLabel">Suara Off</span>
+    </button>
+    <button class="chat-open-btn" id="chatOpenLabel">Buka &#9662;</button>
   </div>
-</header>
-
-<div class="statbar">
-  <div class="stat-card">
-    <div class="label">Line Terpilih</div>
-    <div class="value" id="statLine">-</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Jumlah Operator</div>
-    <div class="value" id="statCount">0</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Rata-rata Efisiensi</div>
-    <div class="value" id="statEff">-</div>
-  </div>
-  <div class="stat-card">
-    <div class="label">Tanggal Data</div>
-    <div class="value small" id="statDate">-</div>
-  </div>
-  <div class="spacer"></div>
 </div>
 
-<div class="controls">
-  <div class="field">
-    <label>Tanggal</label>
-    <input type="date" id="inputTanggal">
+<div class="chatroom" id="chatRoom" style="display:none">
+  <div class="chat-log" id="chatLog">
+    <div class="msg-bot">
+      <div class="msg-bot-avatar">L</div>
+      <div class="msg-bot-bubble">Tanya kondisi line, efisiensi, repair, atau operator hari ini. Jawaban langsung dari data terbaru.</div>
+    </div>
   </div>
-  <div class="field">
-    <label>Pilih Line</label>
-    <select id="selectLine"><option value="">Memuat line...</option></select>
+  <div class="chat-suggest-row" id="chatSuggestRow">
+    <button class="chat-suggest-chip" onclick="askSuggested('Bagaimana performa line F14?')">Bagaimana performa line F14?</button>
+    <button class="chat-suggest-chip" onclick="askSuggested('SPV mana yang perlu bantuan?')">SPV mana yang perlu bantuan?</button>
+    <button class="chat-suggest-chip" onclick="askSuggested('SPO-SPO yang harus segera selesai?')">SPO-SPO yang harus segera selesai?</button>
   </div>
-  <button class="btn btn-teal" id="btnLoad" title="Ambil ulang data operator terbaru dari server (biasanya tidak perlu, cache otomatis)">Refresh Master Data</button>
-  <div class="spacer"></div>
+  <div class="chat-inputrow">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Tulis pertanyaan..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-icon-btn" id="micBtn" onclick="toggleMic()" title="Mic" aria-label="Mic">&#127908;</button>
+    <button class="chat-icon-btn send" onclick="sendChat()" title="Kirim" aria-label="Kirim">&#10148;</button>
+  </div>
+  <div class="chat-hint">One-shot Q&amp;A — tiap pertanyaan dijawab berdiri sendiri, tanpa mengingat percakapan sebelumnya.</div>
 </div>
 
-<div class="table-wrap">
-  <div id="tableContainer">
-    <div class="empty-state">
-      <h3>Belum ada data</h3>
-      <p>Pilih line untuk menampilkan daftar operator secara otomatis.</p>
+<div class="app-body">
+  <div class="sidebar">
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      <span>Daily</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="mainContent">
+      <div class="loading-line">Klik "Ambil Data" di panel konfigurasi (&#9881;) untuk mulai.</div>
     </div>
   </div>
 </div>
 
-<div class="footerbar">
-  <button class="btn btn-teal" id="btnSave" disabled>Simpan</button>
-  <button class="btn btn-orange" id="btnSubmit" disabled>Submit ke Sheet</button>
-  <button class="btn btn-danger-ghost" id="btnClear" disabled>Hapus Data</button>
-  <div class="save-status" id="saveStatus">Belum ada perubahan</div>
+<div class="footer">
+  <span>LITRA-ASI &middot; PT. ASI &middot; Divisi Sewing</span>
+  <span id="footerRows"></span>
 </div>
 
 <script>
-// ======================================================
-// KONFIGURASI - GANTI DENGAN URL WEB APP APPS SCRIPT ANDA
-// ======================================================
-const CONFIG = {
-  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbw_2cALAGALK13pFVPHHjvJSPrmDV80kSdO-Wtde3laeIVIac24ZTmamh7RURX_SG4/exec',
-  JAM_COUNT: 11
-};
+// ─── CONFIG HELPERS ──────────────────────────────────────
+function cfg(id){ return document.getElementById(id).value.trim(); }
+function toggleCfg(){ document.getElementById('cfgPanel').classList.toggle('open'); }
+function toggleFullscreen(){
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+document.getElementById('dateNow').textContent = new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
 
-let currentOperators = []; // state di memori: array of {nip,nama,line,style,proses,target,jam:{}}
-let isLocked = false;
-let currentLine = '';
-let currentTanggal = '';
-let syncTimer = null;
-let isSyncing = false;
+let allData = null;
+let lastSuggest = null;
 
-let masterLines = [];
-let masterOperators = []; // SEMUA operator aktif, semua line (nama,nip,line,style,proses,target) - tanpa jam
-
-const STORAGE_KEY = 'litra_asi_capacity_draft_v1';
-const MASTER_CACHE_KEY = 'litra_asi_master_cache_v1';
-const MASTER_CACHE_TTL = 30 * 60 * 1000; // 30 menit
-
-function draftKey(tanggal, line){ return tanggal + '||' + line; }
-
-function loadAllDrafts(){
-  try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-  }catch(e){ return {}; }
+// ─── FETCH (paralel) ─────────────────────────────────────
+async function fetchGviz(sheetId, sheetName){
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}&headers=1`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} — ${sheetName}`);
+  const text = await res.text();
+  const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/);
+  if (!match) throw new Error(`Parse error — ${sheetName}`);
+  const json = JSON.parse(match[1]);
+  if (json.status === 'error') throw new Error(`Google error — ${sheetName}`);
+  if (!json.table || !json.table.cols) throw new Error(`Sheet kosong — ${sheetName}`);
+  const cols = json.table.cols.map(c => c.label || c.id);
+  const colIds = json.table.cols.map(c => c.id); // huruf kolom asli (A, B, C, ...) — dipakai sebagai fallback yang gak tergantung nama header
+  const colTypes = json.table.cols.map(c => c.type);
+  const rows = (json.table.rows || []).map(r => {
+    const obj = {};
+    (r.c || []).forEach((cell, i) => {
+      let val;
+      if (!cell || cell.v === null || cell.v === undefined) { val = ''; }
+      else if (colTypes[i] === 'date' || colTypes[i] === 'datetime') {
+        const dm = String(cell.v).match(/Date\((\d+),(\d+),(\d+)/);
+        val = dm ? new Date(parseInt(dm[1]), parseInt(dm[2]), parseInt(dm[3])) : (cell.f || cell.v);
+      } else {
+        val = (cell.f !== undefined && cell.f !== null) ? cell.f : cell.v;
+      }
+      obj[cols[i]] = val;
+      if (colIds[i]) obj['_col_'+colIds[i]] = val; // akses aman lewat huruf kolom, terlepas dari nama header
+    });
+    return obj;
+  }).filter(r => Object.values(r).some(v => v !== '' && v !== null && v !== undefined));
+  return rows;
 }
 
-function saveLocalDraft(tanggal, line, rows){
-  const all = loadAllDrafts();
-  all[draftKey(tanggal, line)] = { savedAt: Date.now(), rows };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+async function fetchAllSheets(){
+  // FIX performa: semua request dijalankan paralel, bukan berurutan
+  const jobs = [
+    fetchGviz(cfg('c-eff'), cfg('c-es')).catch(e => ({__err:e.message, __tag:'Efisiensi'})),
+    fetchGviz(cfg('c-eff'), cfg('c-rs')).catch(e => ({__err:e.message, __tag:'Repair'})),
+    fetchGviz(cfg('c-eff'), cfg('c-opj')).catch(e => ({__err:e.message, __tag:'Output Per Jam'})),
+    fetchGviz(cfg('c-plan'), cfg('c-ps')).catch(e => ({__err:e.message, __tag:'Planning'})),
+    fetchGviz(cfg('c-opid'), cfg('c-opsh')).catch(e => ({__err:e.message, __tag:'Kapasitas Operator'})),
+    fetchGviz(cfg('c-eff'), cfg('c-wip')).catch(e => ({__err:e.message, __tag:'WIP'})),
+  ];
+  const [effRows, repRows, opjRows, planRows, opRows, wipRows] = await Promise.all(jobs);
+
+  const warns = [];
+  [effRows, repRows, opjRows, planRows, opRows, wipRows].forEach(r => { if (r && r.__err) warns.push(`${r.__tag}: ${r.__err}`); });
+
+  return {
+    effRows: Array.isArray(effRows) ? effRows : [],
+    repRows: Array.isArray(repRows) ? repRows : [],
+    opjRows: Array.isArray(opjRows) ? opjRows : [],
+    planRows: Array.isArray(planRows) ? planRows : [],
+    opRows: Array.isArray(opRows) ? opRows : [],
+    wipRows: Array.isArray(wipRows) ? wipRows : [],
+    warns
+  };
 }
 
-function getLocalDraft(tanggal, line){
-  const all = loadAllDrafts();
-  return all[draftKey(tanggal, line)] || null;
+async function loadAll(){
+  const panel = document.getElementById('mainContent');
+  panel.innerHTML = '<div class="loading-line">Mengambil data dari Google Sheets...</div>';
+
+  allData = await fetchAllSheets();
+
+  if (allData.effRows.length === 0 && allData.repRows.length === 0) {
+    panel.innerHTML = '<div class="err-box">Data kosong atau gagal dimuat.<br>' + allData.warns.join('<br>') + '</div>';
+    return;
+  }
+
+  document.getElementById('lastUpdate').textContent = 'Update ' + new Date().toLocaleTimeString('id-ID');
+  document.getElementById('footerRows').textContent = `${allData.effRows.length} baris efisiensi · ${allData.repRows.length} baris repair`;
+  lastSuggest = null;
+  renderDaily();
+  startAutoRefresh();
 }
 
-function clearLocalDraft(tanggal, line){
-  const all = loadAllDrafts();
-  delete all[draftKey(tanggal, line)];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+// ─── AUTO REFRESH DIAM-DIAM (khusus supaya chat selalu punya data terbaru hari ini) ──
+// Tab Daily tetap anchor ke data kemarin dan TIDAK ikut re-render otomatis di sini,
+// supaya suggest yang sudah digenerate di tiap kotak tidak hilang/reset sendiri.
+let autoRefreshTimer = null;
+function startAutoRefresh(){
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(silentRefreshData, 30 * 60 * 1000); // 30 menit
+}
+async function silentRefreshData(){
+  try {
+    const fresh = await fetchAllSheets();
+    if (fresh.effRows.length === 0 && fresh.repRows.length === 0) return; // gagal/kosong, jangan timpa data yang masih valid
+    allData = fresh;
+    const badge = document.getElementById('lastUpdate');
+    if (badge) badge.textContent = 'Update ' + new Date().toLocaleTimeString('id-ID') + ' (auto)';
+  } catch(e){ /* diam-diam gagal, coba lagi di siklus berikutnya */ }
 }
 
-function persistCurrentToLocal(){
-  if(!currentTanggal || !currentLine) return;
-  saveLocalDraft(currentTanggal, currentLine, currentOperators.map(op => ({
-    nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
-    target: op.target, jam: op.jam
-  })));
+// ─── DATE HELPERS ─────────────────────────────────────────
+function sameDay(a,b){ return a instanceof Date && b instanceof Date && a.toDateString() === b.toDateString(); }
+function getYesterday(){ const d = new Date(); d.setDate(d.getDate()-1); return d; }
+function latestDateIn(rows){
+  let max = null;
+  rows.forEach(r => { const t = r['TANGGAL'] || r['Tanggal']; if (t instanceof Date && (!max || t > max)) max = t; });
+  return max;
 }
-
-// ---------- CLOCK ----------
-function updateClock(){
-  const now = new Date();
-  document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID', {hour12:false});
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ---------- DEFAULT TANGGAL = HARI INI ----------
-function todayStr(){
-  const d = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
-document.getElementById('inputTanggal').value = todayStr();
-document.getElementById('statDate').textContent = todayStr();
-
-// ---------- API HELPERS ----------
-async function apiGet(params){
-  const url = new URL(CONFIG.APPS_SCRIPT_URL);
-  Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
-  const res = await fetch(url.toString(), { method:'GET' });
-  const json = await res.json();
-  if(!json.ok) throw new Error(json.error || 'Terjadi kesalahan pada server');
-  return json.data;
-}
-
-async function apiPost(body){
-  const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
-    method:'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(body)
+function num(v){ const n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function sortByDateDesc(rows){
+  return rows.slice().sort((a,b) => {
+    const da = a['TANGGAL']||a['Tanggal']; const db = b['TANGGAL']||b['Tanggal'];
+    if (!(da instanceof Date) && !(db instanceof Date)) return 0;
+    if (!(da instanceof Date)) return 1;
+    if (!(db instanceof Date)) return -1;
+    return db - da;
   });
-  const json = await res.json();
-  if(!json.ok) throw new Error(json.error || 'Terjadi kesalahan pada server');
-  return json.data;
+}
+function pctFrom(v){ // desimal 0-2 => x100, sudah > 2 berarti sudah persen
+  const n = num(v); return n <= 2 ? n*100 : n;
 }
 
-// ---------- MASTER DATA CACHE (operator semua line, cache di browser) ----------
+const CRITICAL_PROCESS = ['J. IBU JARI JARUM 1','J. IBU JARI JARUM 2','J. MACHI','J. LIPAT','J. PITA LOV'];
+function isCriticalProcess(p){ return CRITICAL_PROCESS.includes(String(p||'').trim().toUpperCase()); }
 
-function readMasterCache(){
-  try{
-    const raw = localStorage.getItem(MASTER_CACHE_KEY);
-    if(!raw) return null;
-    return JSON.parse(raw);
-  }catch(e){ return null; }
-}
+// ─── DAILY: KLASIFIKASI 4 STATUS ─────────────────────────
+function buildDailyLineData(){
+  const targetDate = getYesterday(); // Daily = strict data hari kemarin, tidak fallback ke tanggal lain
+  const effToday = allData.effRows.filter(r => sameDay(r['TANGGAL']||r['Tanggal'], targetDate));
+  const repToday = allData.repRows.filter(r => sameDay(r['TANGGAL']||r['Tanggal'], targetDate));
+  const opjToday = allData.opjRows.filter(r => sameDay(r['TANGGAL']||r['Tanggal'], targetDate));
+  const opToday = (allData.opRows||[]).filter(r => sameDay(r['TANGGAL']||r['Tanggal'], targetDate));
+  // Kolom WIP diakses lewat huruf kolom (_col_X), bukan nama header — lebih aman karena header persisnya belum dipastikan.
+  // A=Tanggal, B=Line, C=SPV, D=Nilai Max (diabaikan), E=WIP Sew (Pcs), F=Target Line, K=WIP Sew (Hour), L=Status Problem
+  const wipToday = (allData.wipRows||[]).filter(r => sameDay(r['_col_A'], targetDate));
 
-function writeMasterCache(data){
-  try{
-    localStorage.setItem(MASTER_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  }catch(e){}
-}
+  const lines = {};
+  effToday.forEach(r => {
+    const line = r['LINE']; if (!line) return;
+    lines[line] = lines[line] || { line, spv: r['SPV']||'' };
+    lines[line].eff = pctFrom(r['EFF LINE']);
+  });
+  repToday.forEach(r => {
+    const line = r['LINE']; if (!line) return;
+    lines[line] = lines[line] || { line, spv: r['SPV']||'' };
+    lines[line].repair = pctFrom(r['REPAIR']);
+  });
+  opjToday.forEach(r => {
+    const line = r['LINE']; if (!line) return;
+    lines[line] = lines[line] || { line, spv: r['SPV']||'' };
+    lines[line].opjActual = num(r['Output Per Jam'] ?? r['Output Actual']);
+    lines[line].opjTarget = num(r['Target']);
+  });
+  wipToday.forEach(r => {
+    const line = r['_col_B']; if (!line) return;
+    lines[line] = lines[line] || { line, spv: r['_col_C']||'' };
+    if (!lines[line].spv) lines[line].spv = r['_col_C']||'';
+    lines[line].wipPcs = num(r['_col_E']);
+    lines[line].wipTarget = num(r['_col_F']);
+    lines[line].wipHour = num(r['_col_K']);
+    lines[line].wipStatus = String(r['_col_L']||'').trim().toUpperCase(); // BIG PROBLEM / URGENT / PRIORITAS / AMAN (sudah dihitung di sheet, termasuk kasus WIP kekecilan maupun kebesaran)
+  });
 
-function applyMasterData(data){
-  masterLines = data.lines || [];
-  masterOperators = data.operators || [];
-
-  const select = document.getElementById('selectLine');
-  const prevValue = select.value;
-  select.innerHTML = '<option value="">-- Pilih Line --</option>' +
-    masterLines.map(l => `<option value="${l}">${l}</option>`).join('');
-  if(prevValue && masterLines.includes(prevValue)){
-    select.value = prevValue;
-  }
-  document.getElementById('connStatus').textContent = 'Terhubung';
-}
-
-async function loadMasterData(){
-  const cached = readMasterCache();
-  if(cached && (Date.now() - cached.ts) < MASTER_CACHE_TTL){
-    // Cache masih fresh -> tampil instan, refresh diam-diam di background
-    applyMasterData(cached.data);
-    if(document.getElementById('selectLine').value){
-      onLineOrDateChange();
+  // Kaitkan data kapasitas operator per line (kemarin, eff=0 diabaikan — kemungkinan absen/belum diinput)
+  Object.values(lines).forEach(l => { l.operators = []; l.hasCriticalProblem = false; });
+  opToday.forEach(r => {
+    const line = r['Line'] || r['LINE']; const effOp = pctFrom(r['Eff']);
+    if (!line || !lines[line] || effOp === 0) return;
+    const proses = r['Proses'] || '';
+    const critical = isCriticalProcess(proses);
+    if (effOp < 100 || critical) {
+      lines[line].operators.push({ nama: r['Nama']||'', proses, eff: effOp, repair: pctFrom(r['Persentase repair']), critical });
+      if (critical && effOp < 100) lines[line].hasCriticalProblem = true;
     }
-    fetchMasterFromServer(false);
-    return;
-  }
-  // Cache kosong / kadaluarsa -> fetch dengan indikator loading
-  await fetchMasterFromServer(true);
+  });
+
+  return { targetDate, list: Object.values(lines) };
 }
 
-async function fetchMasterFromServer(showLoading){
-  const select = document.getElementById('selectLine');
-  if(showLoading){
-    select.innerHTML = '<option value="">Memuat line...</option>';
-    document.getElementById('connStatus').textContent = 'Menghubungkan...';
-  }
-  try{
-    const data = await apiGet({ action:'getMasterData' });
-    writeMasterCache(data);
-    applyMasterData(data);
-    // Kalau ada line yang sedang dipilih, refresh tampilan (data operator ter-update, jam tetap dari draft lokal)
-    if(document.getElementById('selectLine').value){
-      onLineOrDateChange();
-    }
-  }catch(err){
-    if(showLoading){
-      select.innerHTML = '<option value="">Gagal memuat line</option>';
-      document.getElementById('connStatus').textContent = 'Gagal terhubung';
-    }
-    console.error(err);
-  }
+const SEVERITY_RANK = { bigproblem: 3, urgent: 2, prioritas: 1, apreciate: 0 };
+function wipSeverity(status){
+  if (status === 'BIG PROBLEM') return 'bigproblem';
+  if (status === 'URGENT') return 'urgent';
+  if (status === 'PRIORITAS') return 'prioritas';
+  if (status === 'AMAN') return 'apreciate';
+  return null; // status WIP tidak diketahui/kosong — tidak ikut memengaruhi klasifikasi
 }
 
-document.getElementById('btnLoad').addEventListener('click', () => fetchMasterFromServer(true));
+function classifyLine(l){
+  const eff = l.eff ?? null;
+  const repair = l.repair ?? null;
+  const outBelowTarget = (l.opjTarget > 0) ? (l.opjActual < l.opjTarget) : null;
+  if (eff === null || repair === null) return 'unknown';
+  let result;
+  if (eff < 85 && outBelowTarget !== false && repair > 10) result = 'bigproblem';
+  else if (eff < 85 && outBelowTarget !== false && repair > 6) result = 'urgent';
+  else if (eff < 85 && outBelowTarget === false && repair > 6) result = 'prioritas';
+  else result = 'apreciate';
+  // Operator di critical process yang bermasalah selalu wajib minimal urgent
+  if (l.hasCriticalProblem && (result === 'prioritas' || result === 'apreciate')) result = 'urgent';
+  // Status WIP dari sheet (sudah menghitung kasus kekecilan maupun kebesaran) — ambil yang paling parah
+  const wipResult = wipSeverity(l.wipStatus);
+  if (wipResult && SEVERITY_RANK[wipResult] > SEVERITY_RANK[result]) result = wipResult;
+  return result;
+}
 
-loadMasterData();
+function renderDaily(){
+  const { targetDate, list } = buildDailyLineData();
+  const buckets = { bigproblem: [], urgent: [], prioritas: [], apreciate: [] };
+  list.forEach(l => { const c = classifyLine(l); if (buckets[c]) buckets[c].push(l); });
 
-// ---------- TAMPILKAN OPERATOR PER LINE (murni dari cache, instan) ----------
+  const avg = (arr, key) => arr.length ? (arr.reduce((s,l)=>s+(l[key]||0),0)/arr.length) : null;
+  const effAvg = avg(list.filter(l=>l.eff!=null), 'eff');
+  const repairAvg = avg(list.filter(l=>l.repair!=null), 'repair');
+  const opjList = list.filter(l=>l.opjActual!=null);
+  const opjAvg = avg(opjList, 'opjActual');
+  const wipHourAvg = avg(list.filter(l=>l.wipHour!=null), 'wipHour');
 
-function onLineOrDateChange(){
-  const line = document.getElementById('selectLine').value;
-  const tanggal = document.getElementById('inputTanggal').value;
+  const dateLabel = targetDate ? targetDate.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}) : '-';
 
-  if(!line){
-    currentOperators = [];
-    currentLine = ''; currentTanggal = '';
-    renderTable();
-    document.getElementById('statLine').textContent = '-';
-    document.getElementById('statCount').textContent = '0';
-    document.getElementById('btnSave').disabled = true;
-    document.getElementById('btnSubmit').disabled = true;
-    document.getElementById('btnClear').disabled = true;
-    return;
-  }
+  const statusCol = (key, cls, title, desc) => {
+    const items = buckets[key];
+    const itemsHtml = items.length
+      ? items.map(l => `<div class="status-line-item"><span class="status-line-code">${l.line}</span><div class="status-line-meta">Eff ${l.eff!=null?l.eff.toFixed(0):'-'}% &middot; Repair ${l.repair!=null?l.repair.toFixed(1):'-'}%${l.wipPcs!=null?' &middot; WIP ('+Math.round(l.wipPcs)+' pcs/'+(l.wipHour!=null?l.wipHour.toFixed(1):'-')+' jam)':''}${l.operators&&l.operators.length?' &middot; '+l.operators.length+' operator bermasalah'+(l.hasCriticalProblem?' (proses kritis)':''):''}</div></div>`).join('')
+      : '<div class="status-empty">Tidak ada line</div>';
+    const withWip = items.filter(l => l.wipPcs != null);
+    const wipTop = withWip.length ? withWip.reduce((a,b) => (b.wipPcs > a.wipPcs ? b : a)) : null;
+    return `<div class="status-col ${cls}">
+      <div class="status-col-title">${title} <span class="mono" style="font-size:10px;opacity:.7">(${items.length})</span></div>
+      <div class="status-col-desc">${desc}</div>
+      ${wipTop ? `<div class="status-wip-top">WIP tertinggi: <b>${wipTop.line}</b> &middot; (${Math.round(wipTop.wipPcs)} pcs/${wipTop.wipHour!=null?wipTop.wipHour.toFixed(1):'-'} jam)${wipTop.wipTarget?' / target '+Math.round(wipTop.wipTarget):''}</div>` : ''}
+      ${itemsHtml}
+      <div class="status-suggest" id="suggest-${key}"></div>
+    </div>`;
+  };
 
-  const filtered = masterOperators.filter(op => op.line === line);
-  const localDraft = getLocalDraft(tanggal, line);
-  const localByNip = {};
-  if(localDraft){
-    localDraft.rows.forEach(r => { localByNip[String(r.nip)] = r.jam || {}; });
-  }
+  const { changes: styleChanges, missingStatus } = detectStyleChanges();
+  const spvHelp = buildSpvNeedHelp(list, buckets);
 
-  currentOperators = filtered.map(op => ({
-    ...op,
-    jam: localByNip[String(op.nip)] || {}
+  const html = `
+  ${list.length === 0 ? `<div class="err-box">Belum ada data untuk tanggal kemarin (${dateLabel}). Tab Daily hanya menampilkan data hari kemarin, tidak mundur ke tanggal lain.</div>` : ''}
+  <div class="toolbar">
+    <div class="stat-row">
+      <div class="stat-chip"><div class="stat-chip-label">EFF · RATA KEMARIN</div><div class="stat-chip-value">${effAvg!=null?effAvg.toFixed(0)+'%':'-'}</div></div>
+      <div class="stat-chip"><div class="stat-chip-label">OUT ACTUAL · RATA</div><div class="stat-chip-value">${opjAvg!=null?opjAvg.toFixed(0):'-'}</div></div>
+      <div class="stat-chip"><div class="stat-chip-label">REPAIR · RATA</div><div class="stat-chip-value">${repairAvg!=null?repairAvg.toFixed(1)+'%':'-'}</div></div>
+      <div class="stat-chip"><div class="stat-chip-label">WIP SEW HOUR · RATA</div><div class="stat-chip-value">${wipHourAvg!=null?wipHourAvg.toFixed(1)+' jam':'-'}</div></div>
+      <div class="stat-chip"><div class="stat-chip-label">SHIPMENT · WIP</div><div class="stat-chip-value muted">Data belum ada</div></div>
+      <div class="stat-chip"><div class="stat-chip-label">TANGGAL DATA</div><div class="stat-chip-value" style="font-size:12px">${dateLabel}</div></div>
+    </div>
+    <button class="btn btn-primary" id="genBtn" onclick="generateDailySuggest()">Generate Suggest</button>
+  </div>
+
+  <div class="status-grid">
+    ${statusCol('bigproblem','col-bigproblem','Big problem','Eff di bawah 85, output di bawah target, repair di atas 10 persen')}
+    ${statusCol('urgent','col-urgent','Urgent','Eff di bawah 85, output di bawah target, repair di atas 6 persen')}
+    ${statusCol('prioritas','col-prioritas','Prioritas','Eff di bawah 85, output tercapai, repair di atas 6 persen')}
+    ${statusCol('apreciate','col-apreciate','Apreciate','Eff di atas 85, output tercapai, repair terkendali')}
+  </div>
+
+  <div class="monitor-grid">
+    <div class="monitor-card">
+      <div class="monitor-title">Pergantian style</div>
+      ${styleChanges.length ? styleChanges.map(s=>`<div class="style-change-item"><b>${s.line}</b> &middot; ${s.style} (level ${s.level}) &middot; hari ke-${s.day} (target ${s.targetPct}%)<br>Output ${Math.round(s.actual)} / Target ${Math.round(s.target)}${s.achievedPct!=null?' &middot; capaian '+s.achievedPct+'%':''}</div>`).join('') : '<div class="monitor-body empty">Tidak ada line dengan pergantian style aktif dalam 7 hari terakhir.</div>'}
+      ${missingStatus.length ? `<div class="monitor-body" style="margin-top:8px;color:var(--text-4)">${missingStatus.map(l=>`Line ${l} status perubahan style tidak ada`).join('<br>')}</div>` : ''}
+      <div class="monitor-suggest" id="suggest-pergantian"></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-title">FIFO SPO <span class="pill-soon">segera</span></div>
+      <div class="monitor-body empty">Data belum tersedia — menunggu koneksi data SPO.</div>
+      <div class="monitor-sub">
+        <div class="monitor-title">Shipment SPO <span class="pill-soon">segera</span></div>
+        <div class="monitor-body empty">Data belum tersedia — menunggu koneksi data shipment.</div>
+      </div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-title">SPV need help</div>
+      ${spvHelp.length ? spvHelp.map(s=>`<div class="style-change-item"><b>${s.spv}</b> &middot; ${s.bigproblem} big problem, ${s.urgent} urgent, ${s.prioritas} prioritas</div>`).join('') : '<div class="monitor-body empty">Tidak ada SPV dengan line bermasalah signifikan hari ini.</div>'}
+      <div class="monitor-suggest" id="suggest-spvhelp"></div>
+    </div>
+    <div class="monitor-card">
+      <div class="monitor-title">Outstanding project <span class="pill-soon">segera</span></div>
+      <div class="monitor-body empty">Data belum tersedia — menunggu koneksi MIDI_Projects.</div>
+    </div>
+  </div>
+  `;
+
+  document.getElementById('mainContent').innerHTML = html;
+  window.__dailyBuckets = buckets;
+  window.__dailyStats = { effAvg, repairAvg, opjAvg, dateLabel, styleChanges, missingStatus, spvHelp };
+}
+
+function getStyleLevel(jenisStyle){
+  const j = String(jenisStyle||'').toLowerCase();
+  if (j.includes('batting') && j.includes('working')) return 4;
+  if (j.includes('batting')) return 3;
+  if (j.includes('working')) return 2;
+  return 1; // default: Golf Glove
+}
+
+function detectStyleChanges(){
+  const yesterday = getYesterday();
+  const windowStart = new Date(yesterday); windowStart.setDate(windowStart.getDate()-6); // window 7 hari termasuk kemarin
+
+  const opjByKey = {};
+  allData.opjRows.forEach(r => {
+    const tgl = r['TANGGAL']||r['Tanggal']; const line = r['LINE'];
+    if (!(tgl instanceof Date) || !line) return;
+    opjByKey[line+'|'+tgl.toDateString()] = { actual: num(r['Output Per Jam'] ?? r['Output Actual']), target: num(r['Target']) };
+  });
+
+  const byLine = {};
+  allData.effRows.forEach(r => {
+    const tgl = r['TANGGAL']||r['Tanggal']; const line = r['LINE'];
+    if (!(tgl instanceof Date) || !line) return;
+    if (tgl < windowStart || tgl > yesterday) return;
+    byLine[line] = byLine[line] || [];
+    const opj = opjByKey[line+'|'+tgl.toDateString()] || {};
+    const statusRaw = String(r['STATUS PERGANTIAN STYLE']||r['Status Pergantian Style']||'').trim().toUpperCase();
+    byLine[line].push({
+      date: tgl, style: r['STYLE']||'', jenisStyle: r['JENIS STYLE']||'',
+      statusPergantian: statusRaw, // "BEDA" = ganti style di baris ini, "SAMA" = lanjut style sebelumnya
+      actual: opj.actual||0, target: opj.target||0
+    });
+  });
+
+  const ramp = [0,40,60,80,100];
+  const result = [];
+  const missingStatus = [];
+  Object.entries(byLine).forEach(([line, entries]) => {
+    entries.sort((a,b)=>a.date-b.date);
+    if (!entries.length) return;
+    const last = entries[entries.length-1];
+    if (!sameDay(last.date, yesterday)) return; // tidak ada data line ini untuk kemarin
+
+    if (last.statusPergantian !== 'BEDA' && last.statusPergantian !== 'SAMA') {
+      missingStatus.push(line); // kolom STATUS PERGANTIAN STYLE kosong/tidak dikenali untuk baris kemarin — jangan ditebak, tampilkan transparan
+      return;
+    }
+
+    // Hitung "hari ke berapa" dengan jalan mundur dari kemarin: selama baris masih ditandai
+    // SAMA (lanjutan style sebelumnya), terus mundur; berhenti begitu ketemu baris BEDA (hari ke-1).
+    let dayCount = 1;
+    let r = entries.length - 1;
+    while (r > 0 && entries[r].statusPergantian === 'SAMA'){ r--; dayCount++; }
+    if (dayCount > 4) return; // sudah lewat masa ramp-up, tidak perlu ditandai lagi
+
+    const targetPct = ramp[Math.min(dayCount,4)];
+    const achievedPct = last.target > 0 ? Math.round((last.actual/last.target)*100) : null;
+    result.push({ line, style: last.style, level: getStyleLevel(last.jenisStyle), day: dayCount, targetPct, actual: last.actual, target: last.target, achievedPct });
+  });
+  return { changes: result.slice(0,8), missingStatus };
+}
+
+function buildSpvNeedHelp(list, buckets){
+  const bySpv = {};
+  ['bigproblem','urgent','prioritas'].forEach(k => buckets[k].forEach(l => {
+    const spv = l.spv || 'Tanpa SPV';
+    bySpv[spv] = bySpv[spv] || { spv, bigproblem:0, urgent:0, prioritas:0, lines:[] };
+    bySpv[spv][k]++;
+    bySpv[spv].lines.push({ line: l.line, status: k, eff: l.eff, repair: l.repair, operatorBermasalah: (l.operators||[]).length, adaProsesKritis: !!l.hasCriticalProblem });
   }));
-  currentLine = line;
-  currentTanggal = tanggal;
-  isLocked = false;
-
-  renderTable();
-  document.getElementById('statLine').textContent = line;
-  document.getElementById('statCount').textContent = currentOperators.length;
-  document.getElementById('statDate').textContent = tanggal;
-  document.getElementById('btnSave').disabled = false;
-  document.getElementById('btnSubmit').disabled = false;
-  document.getElementById('btnClear').disabled = false;
-  updateAvgEfficiency();
-
-  if(localDraft){
-    setSaveStatus('Melanjutkan draf tersimpan di browser ini.', '');
-  }else{
-    setSaveStatus('Data dimuat.', '');
-  }
+  return Object.values(bySpv).sort((a,b) => (b.bigproblem*3+b.urgent*2+b.prioritas) - (a.bigproblem*3+a.urgent*2+a.prioritas));
 }
 
-document.getElementById('selectLine').addEventListener('change', onLineOrDateChange);
-document.getElementById('inputTanggal').addEventListener('change', onLineOrDateChange);
-
-// ---------- RENDER TABLE ----------
-function renderTable(){
-  const container = document.getElementById('tableContainer');
-  if(currentOperators.length === 0){
-    if(!currentLine){
-      container.innerHTML = `<div class="empty-state"><h3>Belum ada data</h3><p>Pilih line untuk menampilkan daftar operator secara otomatis.</p></div>`;
-    }else{
-      container.innerHTML = `<div class="empty-state"><h3>Tidak ada operator aktif</h3><p>Tidak ditemukan operator aktif pada line ini.</p></div>`;
-    }
-    return;
-  }
-
-  let jamHeaders = '';
-  for(let h=1; h<=CONFIG.JAM_COUNT; h++){ jamHeaders += `<th>Jam ${h}</th>`; }
-
-  let rows = currentOperators.map((op, idx) => {
-    let jamCells = '';
-    for(let h=1; h<=CONFIG.JAM_COUNT; h++){
-      const val = op.jam[h] !== undefined ? op.jam[h] : '';
-      jamCells += `<td><input type="number" min="0" class="jam-input ${val!==''?'filled':''}"
-        data-idx="${idx}" data-jam="${h}" value="${val}" ${isLocked?'disabled':''}></td>`;
-    }
-    const rerata = computeRerata(op.jam);
-    const eff = computeEfficiency(rerata, op.target);
-    return `<tr>
-      <td class="col-no sticky-1">${idx+1}</td>
-      <td class="col-nama sticky-2">${escapeHtml(op.nama)}</td>
-      <td>${escapeHtml(op.nip)}</td>
-      <td class="col-info" title="${escapeHtml(op.style)}">${escapeHtml(op.style)}</td>
-      <td class="col-info" title="${escapeHtml(op.proses)}">${escapeHtml(op.proses)}</td>
-      <td>${op.target !== '' ? op.target : '<span class="eff-empty">-</span>'}</td>
-      <td><input type="number" min="0" class="quickfill-input" data-idx="${idx}"
-        placeholder="Isi 7 jam" title="Isi angka lalu tekan Enter — akan mengisi 7 jam berikutnya yang masih kosong"
-        ${isLocked?'disabled':''}></td>
-      ${jamCells}
-      <td class="rerata-val" data-rerata-idx="${idx}">${rerata !== '' ? rerata.toFixed(1) : '-'}</td>
-      <td data-eff-idx="${idx}">${effChip(eff)}</td>
-    </tr>`;
-  }).join('');
-
-  container.innerHTML = `<table>
-    <thead>
-      <tr>
-        <th class="sticky-1">No</th>
-        <th class="col-nama sticky-2">Nama</th>
-        <th>No. Absen</th>
-        <th class="col-info">Style</th>
-        <th class="col-info">Proses</th>
-        <th>Target</th>
-        <th>Isi 7 Jam</th>
-        ${jamHeaders}
-        <th>Rerata</th>
-        <th>Efisiensi</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-
-  container.querySelectorAll('.jam-input').forEach(input => {
-    input.addEventListener('input', onJamInput);
-    input.addEventListener('keydown', onJamKeydown);
+// ─── GENERATE SUGGEST (manual, khusus Daily) ─────────────
+async function generateDailySuggest(){
+  const btn = document.getElementById('genBtn');
+  const slots = { bigproblem: 'suggest-bigproblem', urgent: 'suggest-urgent', prioritas: 'suggest-prioritas', apreciate: 'suggest-apreciate', pergantian: 'suggest-pergantian', spvhelp: 'suggest-spvhelp' };
+  btn.disabled = true; btn.textContent = 'Memproses...';
+  Object.values(slots).forEach(id => {
+    const el = document.getElementById(id);
+    if (el){ el.textContent = 'Menganalisa...'; el.classList.add('loading'); }
   });
-  container.querySelectorAll('.quickfill-input').forEach(input => {
-    input.addEventListener('keydown', onQuickFillKeydown);
-    input.addEventListener('blur', onQuickFillBlur);
-  });
-}
 
-function onQuickFillKeydown(e){
-  if(e.key === 'Enter' || e.keyCode === 13){
-    e.preventDefault();
-    const idx = Number(e.target.dataset.idx);
-    applyQuickFill(e.target);
-    const nextInput = document.querySelector(`.quickfill-input[data-idx="${idx+1}"]`);
-    if(nextInput){
-      nextInput.focus();
-    }else{
-      e.target.blur(); // sudah baris terakhir
+  const b = window.__dailyBuckets || {bigproblem:[],urgent:[],prioritas:[],apreciate:[]};
+  const s = window.__dailyStats || {};
+
+  const opSummary = l => ({ line: l.line, eff: l.eff, repair: l.repair, spv: l.spv, wipPcs: l.wipPcs, wipTarget: l.wipTarget, wipHour: l.wipHour, wipStatus: l.wipStatus, operatorBermasalah: (l.operators||[]).map(o=>({nama:o.nama,proses:o.proses,eff:o.eff,repair:o.repair,critical:o.critical})) });
+  const prompt = `Kamu adalah LITRA-ASI, sistem analisa manufacturing intelligence untuk PT. ASI Divisi Sewing.
+
+DATA HARI INI (${s.dateLabel}) — tiap line disertai wipPcs (WIP dalam pcs), wipTarget, wipHour (WIP dalam jam), wipStatus (status WIP dari sheet: BIG PROBLEM/URGENT/PRIORITAS/AMAN — bisa karena WIP terlalu kecil ATAU terlalu besar), dan daftar operator bermasalah (efisiensi di bawah 100, atau di proses kritis):
+BIG PROBLEM: ${JSON.stringify(b.bigproblem.map(opSummary))}
+URGENT: ${JSON.stringify(b.urgent.map(opSummary))}
+PRIORITAS: ${JSON.stringify(b.prioritas.map(opSummary))}
+APRECIATE: ${JSON.stringify(b.apreciate.map(opSummary))}
+
+LINE DENGAN PERGANTIAN STYLE AKTIF (7 hari terakhir, "day" = hari ke berapa sejak ganti style, "level" = tingkat kesulitan style 1-4 (4 tersulit), "achievedPct" = capaian output aktual dibanding target):
+${JSON.stringify(s.styleChanges||[])}
+
+SPV DENGAN LINE BERMASALAH (bigproblem/urgent/prioritas per SPV, beserta detail line-nya):
+${JSON.stringify((s.spvHelp||[]).map(sp=>({spv:sp.spv,bigproblem:sp.bigproblem,urgent:sp.urgent,prioritas:sp.prioritas,lines:sp.lines})))}
+
+Struktur organisasi: Manager -> Staff Produksi -> SPV -> Leader Line -> Operator.
+Critical process (prioritas tertinggi jika bermasalah): J. Ibu Jari Jarum 1, J. Ibu Jari Jarum 2, J. Machi, J. Lipat, J. Pita Lov.
+
+Buat saran singkat (plain text tanpa markdown atau bullet, angka dalam digit) untuk MASING-MASING kategori berikut:
+
+1. BIG PROBLEM, URGENT, PRIORITAS, APRECIATE — 1-2 kalimat actionable berdasarkan line-line di kategori itu. WAJIB kaitkan dengan data operatorBermasalah jika ada — sebutkan nama proses atau operator jika itu jadi penyebab utama, terutama kalau ada operator di proses kritis. WAJIB juga kaitkan dengan wipStatus jika bermasalah — sebutkan apakah WIP-nya terlalu kecil (risiko line berhenti/starve) atau terlalu besar (risiko bottleneck/menumpuk), sebutkan angka wipPcs vs wipTarget. Kalau kosong tulis "Tidak ada line di kategori ini hari ini". Untuk APRECIATE isi apresiasi singkat, bukan perbaikan.
+2. PERGANTIAN STYLE — dari daftar line yang sedang pergantian style, sebutkan line mana yang capaian outputnya (achievedPct) paling jauh di bawah target ramp-nya dan perlu dipantau lebih ketat, sebutkan angka actual/target-nya. Pertimbangkan juga level kesulitan style (level 3-4 lebih wajar butuh waktu adaptasi, jadi lebih toleran; level 1-2 yang capaiannya rendah lebih perlu perhatian). Kalau tidak ada line pergantian style tulis "Tidak ada line dengan pergantian style aktif hari ini".
+3. SPV NEED HELP — tentukan SPV mana yang PALING butuh bantuan berdasarkan jumlah dan tingkat keparahan line bermasalah, jelaskan alasannya dengan menyebut line dan angka eff/repair spesifik. Kalau tidak ada yang perlu dibantu tulis "Tidak ada SPV yang perlu bantuan khusus hari ini".
+
+Balas PERSIS dengan format ini, satu baris per kategori, tanpa teks lain:
+BIG PROBLEM: [saran]
+URGENT: [saran]
+PRIORITAS: [saran]
+APRECIATE: [saran]
+PERGANTIAN STYLE: [saran]
+SPV NEED HELP: [saran]`;
+
+  try {
+    const res = await fetch('/api/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    if (data.result) {
+      const text = data.result;
+      const cats = [['bigproblem','BIG PROBLEM'],['urgent','URGENT'],['prioritas','PRIORITAS'],['apreciate','APRECIATE'],['pergantian','PERGANTIAN STYLE'],['spvhelp','SPV NEED HELP']];
+      for (let i=0;i<cats.length;i++){
+        const [key,label] = cats[i];
+        const nextLabel = cats[i+1] ? cats[i+1][1] : null;
+        const start = text.indexOf(label+':');
+        if (start === -1) continue;
+        const end = nextLabel ? text.indexOf(nextLabel+':') : text.length;
+        const chunk = text.slice(start + label.length + 1, end === -1 ? text.length : end).trim();
+        const el = document.getElementById(slots[key]);
+        if (el){ el.textContent = chunk; el.classList.remove('loading'); }
+      }
+    } else {
+      Object.values(slots).forEach(id => {
+        const el = document.getElementById(id);
+        if (el){ el.textContent = 'Gagal generate: ' + (data.error||'unknown error'); el.classList.remove('loading'); }
+      });
     }
+  } catch(e){
+    Object.values(slots).forEach(id => {
+      const el = document.getElementById(id);
+      if (el){ el.textContent = 'Tidak bisa terhubung ke server.'; el.classList.remove('loading'); }
+    });
+  }
+  btn.disabled = false; btn.textContent = 'Generate Suggest';
+}
+
+// ─── CHAT ─────────────────────────────────────────────────
+let chatOpen = false;
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chatRoom').style.display = chatOpen ? 'block' : 'none';
+  document.getElementById('chatOpenLabel').innerHTML = chatOpen ? 'Tutup &#9652;' : 'Buka &#9662;';
+}
+
+function appendMsg(text, isUser){
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  if (isUser){
+    div.className = 'msg-user';
+    div.textContent = text;
+  } else {
+    div.className = 'msg-bot';
+    div.innerHTML = '<div class="msg-bot-avatar">L</div><div class="msg-bot-bubble"></div>';
+    div.querySelector('.msg-bot-bubble').textContent = text;
+  }
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+
+function askSuggested(text){
+  if (!chatOpen) toggleChat();
+  document.getElementById('chatInput').value = text;
+  sendChat();
+}
+
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const question = input.value.trim();
+  if (!question) return;
+  if (!allData){ appendMsg('Ambil data dulu dari panel konfigurasi sebelum bertanya.', false); return; }
+  appendMsg(question, true);
+  input.value = '';
+  const thinking = appendMsg('Menganalisa...', false);
+
+  const effRecent = sortByDateDesc(allData.effRows).slice(0,40);
+  const repRecent = sortByDateDesc(allData.repRows).slice(0,30);
+  const opjRecent = sortByDateDesc(allData.opjRows||[]).slice(0,30);
+  const yesterday = getYesterday();
+  const opYesterday = (allData.opRows||[]).filter(r => sameDay(r['TANGGAL']||r['Tanggal'], yesterday) && pctFrom(r['Eff']) > 0 && pctFrom(r['Eff']) < 100).slice(0,40)
+    .map(r => ({ line: r['Line']||r['LINE'], nama: r['Nama'], proses: r['Proses'], eff: pctFrom(r['Eff']), repair: pctFrom(r['Persentase repair']), critical: isCriticalProcess(r['Proses']) }));
+  const wipYesterday = (allData.wipRows||[]).filter(r => sameDay(r['_col_A'], yesterday))
+    .map(r => ({ line: r['_col_B'], wipPcs: num(r['_col_E']), wipTarget: num(r['_col_F']), wipHour: num(r['_col_K']), status: String(r['_col_L']||'').trim() }));
+  const dStats = window.__dailyStats || {};
+
+  const prompt = `Kamu adalah LITRA-ASI, asisten analisa manufacturing intelligence PT. ASI Divisi Sewing. Jawab pertanyaan user HANYA berdasarkan data berikut, jangan mengarang.
+
+DATA EFISIENSI TERBARU: ${JSON.stringify(effRecent)}
+DATA REPAIR TERBARU: ${JSON.stringify(repRecent)}
+DATA OUTPUT PER JAM TERBARU: ${JSON.stringify(opjRecent)}
+DATA OPERATOR BERMASALAH KEMARIN (efisiensi di bawah 100, "critical":true berarti proses kritis): ${JSON.stringify(opYesterday)}
+DATA WIP KEMARIN PER LINE (wipPcs dalam pcs, wipHour dalam jam, status bisa karena WIP terlalu kecil atau terlalu besar): ${JSON.stringify(wipYesterday)}
+SPV DENGAN LINE BERMASALAH HARI INI: ${JSON.stringify((dStats.spvHelp||[]).map(sp=>({spv:sp.spv,bigproblem:sp.bigproblem,urgent:sp.urgent,prioritas:sp.prioritas})))}
+PERGANTIAN STYLE AKTIF: ${JSON.stringify(dStats.styleChanges||[])}
+
+STRUKTUR ORGANISASI: Manager -> Staff Produksi -> SPV -> Leader Line -> Operator.
+Critical process: J. Ibu Jari Jarum 1, J. Ibu Jari Jarum 2, J. Machi, J. Lipat, J. Pita Lov.
+CATATAN: data FIFO SPO, Shipment SPO, dan Outstanding Project BELUM tersedia di sistem ini. Jika pertanyaan menyangkut itu, jawab jujur bahwa datanya belum tersedia, jangan mengarang.
+
+Jika pertanyaan tentang kondisi atau performa suatu line, WAJIB jawab 5 parameter berurutan: pertama efisiensi dan statusnya, kedua output per jam (actual vs target, tanpa rasio), ketiga repair rate dan statusnya, keempat WIP (pcs dan jam, serta apakah kekecilan atau kebesaran dibanding target), kelima catatan operator — sebutkan nama, proses, efisiensi, dan repair operator di line itu yang bermasalah, terutama di proses kritis, dari DATA OPERATOR BERMASALAH KEMARIN.
+
+Jika pertanyaan tentang SPV mana yang perlu bantuan, jawab berdasarkan SPV DENGAN LINE BERMASALAH HARI INI, sebutkan nama SPV dan jumlah line bermasalahnya.
+
+Pertanyaan: "${question}"
+
+Format jawaban: plain text tanpa markdown, tanpa bullet atau simbol, angka dalam bentuk digit, maksimal 200 kata, bahasa Indonesia percakapan natural.`;
+
+  try {
+    const res = await fetch('/api/suggest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    thinking.remove();
+    const answer = data.result || ('Maaf, terjadi kesalahan: ' + (data.error||'unknown'));
+    appendMsg(answer, false);
+    if (voiceOn) speak(answer);
+  } catch(e){
+    thinking.remove();
+    appendMsg('Tidak bisa terhubung ke server. Coba lagi.', false);
   }
 }
 
-function onQuickFillBlur(e){
-  applyQuickFill(e.target);
+// ─── VOICE (Web Speech API) ────────────────────────────────
+let voiceOn = false;
+function toggleVoice(){
+  voiceOn = !voiceOn;
+  document.getElementById('voiceToggle').classList.toggle('active', voiceOn);
+  document.getElementById('voiceLabel').textContent = voiceOn ? 'Suara On' : 'Suara Off';
+  document.getElementById('voiceIcon').innerHTML = voiceOn ? '&#128266;' : '&#128263;';
+  if (!voiceOn) window.speechSynthesis && window.speechSynthesis.cancel();
+}
+function speak(text){
+  if (!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'id-ID';
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
 }
 
-function applyQuickFill(inputEl){
-  const idx = Number(inputEl.dataset.idx);
-  const raw = inputEl.value;
-  inputEl.value = ''; // kotak ini cuma pemicu, bukan tempat penyimpanan
-  if(raw === '' || isNaN(raw)) return;
-
-  const value = Number(raw);
-  const op = currentOperators[idx];
-
-  // Cari jam kosong pertama sebagai titik mulai
-  let startH = null;
-  for(let h=1; h<=CONFIG.JAM_COUNT; h++){
-    if(op.jam[h] === undefined || op.jam[h] === ''){ startH = h; break; }
-  }
-  if(startH === null) return; // semua jam sudah terisi, tidak ada yang perlu diisi
-
-  const endH = Math.min(startH + 6, CONFIG.JAM_COUNT); // isi 7 jam (termasuk jam mulai)
-  for(let h=startH; h<=endH; h++){
-    op.jam[h] = value;
-    const jamInput = container_querySelectorJam(idx, h);
-    if(jamInput){
-      jamInput.value = value;
-      jamInput.classList.add('filled');
-    }
-  }
-
-  const rerata = computeRerata(op.jam);
-  const eff = computeEfficiency(rerata, op.target);
-  document.querySelector(`[data-rerata-idx="${idx}"]`).textContent = rerata !== '' ? rerata.toFixed(1) : '-';
-  document.querySelector(`[data-eff-idx="${idx}"]`).innerHTML = effChip(eff);
-
-  persistCurrentToLocal();
-  setSaveStatus('Tersimpan di browser (belum dikirim ke sheet).', '');
-  updateAvgEfficiency();
+let recognizer = null, micActive = false;
+function toggleMic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR){ alert('Voice input tidak didukung di browser ini.'); return; }
+  if (micActive){ recognizer && recognizer.stop(); return; }
+  recognizer = new SR();
+  recognizer.lang = 'id-ID';
+  recognizer.interimResults = false;
+  recognizer.onstart = () => { micActive = true; document.getElementById('micBtn').classList.add('listening'); };
+  recognizer.onend = () => { micActive = false; document.getElementById('micBtn').classList.remove('listening'); };
+  recognizer.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    document.getElementById('chatInput').value = text;
+    sendChat();
+  };
+  recognizer.start();
 }
 
-function container_querySelectorJam(idx, h){
-  return document.querySelector(`.jam-input[data-idx="${idx}"][data-jam="${h}"]`);
-}
-
-function onJamKeydown(e){
-  if(e.key !== 'Enter') return;
-  e.preventDefault();
-  const idx = Number(e.target.dataset.idx);
-  const jam = e.target.dataset.jam;
-  const nextInput = document.querySelector(`.jam-input[data-idx="${idx+1}"][data-jam="${jam}"]`);
-  if(nextInput){
-    nextInput.focus();
-    nextInput.select();
-  }else{
-    e.target.blur(); // sudah baris terakhir, tidak ada lagi di bawahnya
-  }
-}
-
-function onJamInput(e){
-  const idx = Number(e.target.dataset.idx);
-  const jamKe = e.target.dataset.jam;
-  const val = e.target.value;
-  currentOperators[idx].jam[jamKe] = val === '' ? '' : Number(val);
-  e.target.classList.toggle('filled', val !== '');
-
-  const rerata = computeRerata(currentOperators[idx].jam);
-  const eff = computeEfficiency(rerata, currentOperators[idx].target);
-  document.querySelector(`[data-rerata-idx="${idx}"]`).textContent = rerata !== '' ? rerata.toFixed(1) : '-';
-  document.querySelector(`[data-eff-idx="${idx}"]`).innerHTML = effChip(eff);
-
-  persistCurrentToLocal();
-  setSaveStatus('Tersimpan di browser (belum dikirim ke sheet).', '');
-  updateAvgEfficiency();
-}
-
-function computeRerata(jamObj){
-  const vals = Object.values(jamObj).filter(v => v !== '' && v !== undefined && !isNaN(v)).map(Number);
-  if(vals.length === 0) return '';
-  return vals.reduce((a,b) => a+b, 0) / vals.length;
-}
-
-function computeEfficiency(rerata, target){
-  if(rerata === '' || !target || Number(target) <= 0) return '';
-  return (rerata / Number(target)) * 100;
-}
-
-function effChip(eff){
-  if(eff === '') return '<span class="eff-empty">-</span>';
-  let cls = 'eff-red';
-  if(eff >= 100) cls = 'eff-green';
-  else if(eff >= 85) cls = 'eff-yellow';
-  return `<span class="eff-chip ${cls}">${eff.toFixed(1)}%</span>`;
-}
-
-function updateAvgEfficiency(){
-  const effs = currentOperators
-    .map(op => computeEfficiency(computeRerata(op.jam), op.target))
-    .filter(e => e !== '');
-  const el = document.getElementById('statEff');
-  if(effs.length === 0){ el.textContent = '-'; return; }
-  const avg = effs.reduce((a,b)=>a+b,0) / effs.length;
-  el.textContent = avg.toFixed(1) + '%';
-}
-
-function escapeHtml(str){
-  return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-function setSaveStatus(text, type){
-  const el = document.getElementById('saveStatus');
-  el.textContent = text;
-  el.className = 'save-status' + (type ? ' ' + type : '');
-}
-
-// ---------- SAVE (lokal) & SUBMIT (kirim ke sheet) ----------
-function doSaveLocal(){
-  persistCurrentToLocal();
-  const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
-  setSaveStatus('Tersimpan di browser pukul ' + now + ' (belum dikirim ke sheet).', 'ok');
-}
-
-async function doSubmit(){
-  const tanggal = currentTanggal;
-  const rows = currentOperators.map(op => ({
-    nip: op.nip, nama: op.nama, line: op.line, style: op.style, proses: op.proses,
-    target: op.target, jam: op.jam
-  }));
-
-  const btnSave = document.getElementById('btnSave');
-  const btnSubmit = document.getElementById('btnSubmit');
-  const btnClear = document.getElementById('btnClear');
-  btnSave.disabled = true; btnSubmit.disabled = true; btnClear.disabled = true;
-  setSaveStatus('Mengirim submit final ke sheet...', '');
-
-  while(isSyncing){ await new Promise(r => setTimeout(r, 200)); }
-  isSyncing = true;
-  try{
-    await apiPost({ action:'submit', tanggal, rows });
-    const now = new Date().toLocaleTimeString('id-ID', {hour12:false});
-    clearLocalDraft(currentTanggal, currentLine);
-    isLocked = true;
-    renderTable();
-    setSaveStatus('Berhasil disubmit final ke sheet pukul ' + now, 'ok');
-  }catch(err){
-    setSaveStatus('Gagal submit ke sheet: ' + err.message + ' (data tetap aman di browser, coba Submit lagi)', 'err');
-  }finally{
-    isSyncing = false;
-    btnSave.disabled = isLocked; btnSubmit.disabled = isLocked; btnClear.disabled = isLocked;
-  }
-}
-
-function doClearData(){
-  if(!currentLine){ return; }
-  const konfirmasi = confirm(
-    'Hapus SEMUA data jam yang sudah diisi untuk Line ' + currentLine + ' tanggal ' + currentTanggal + '?\n\n' +
-    'Ini hanya menghapus draf di browser ini. Data yang sudah pernah di-Submit ke Google Sheet tidak akan terhapus.'
-  );
-  if(!konfirmasi) return;
-
-  currentOperators.forEach(op => { op.jam = {}; });
-  clearLocalDraft(currentTanggal, currentLine);
-  renderTable();
-  updateAvgEfficiency();
-  setSaveStatus('Data draf di browser sudah dihapus.', '');
-}
-
-document.getElementById('btnSave').addEventListener('click', doSaveLocal);
-document.getElementById('btnClear').addEventListener('click', doClearData);
-document.getElementById('btnSubmit').addEventListener('click', () => {
-  if(confirm('Data akan dikirim final ke Google Sheet dan tidak bisa diedit lagi lewat draf browser. Lanjutkan?')){
-    doSubmit();
-  }
+document.addEventListener('fullscreenchange', () => {
+  document.getElementById('fsBtn').innerHTML = document.fullscreenElement ? '&#10005;' : '&#9974;';
 });
 </script>
 </body>
